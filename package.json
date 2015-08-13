@@ -1,0 +1,15 @@
+{
+  "name": "rikitrakiws",
+  "version": "0.0.1",
+  "description": "Web services for RikiTraki",
+  "main": "rikitrakiws.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Ricardo Morin",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.13.3",
+    "mongodb": "^2.0.40"
+  }
+}
