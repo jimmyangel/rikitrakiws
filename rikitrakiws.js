@@ -1,8 +1,16 @@
+var log4js = require('log4js');
+var logger = log4js.getLogger();
 var express = require('express');
 var app = express();
+var port = process.env.PORT || 3000;
+var loglevel = process.env.LOGLEVEL || 'DEBUG';
+
+logger.setLevel(loglevel);
+
+app.use(log4js.connectLogger(log4js.getLogger('http'), { level: 'auto' }));
 
 app.use('/api/', require('./routes/'));
 
-app.listen(3000);
+app.listen(port);
 
-console.log('starting');
+logger.info('starting');
