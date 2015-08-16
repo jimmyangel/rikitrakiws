@@ -4,7 +4,7 @@ var logger = log4js.getLogger();
 
 module.exports = function (router, db) {
 	// Get all tracks
-	router.get('/tracks', function(req, res) {
+	router.get('/v1/tracks', function(req, res) {
 		logger.info('get tracks...');
 		db.collection('tracks', function (err, collection) {
 			var first = true;
@@ -12,7 +12,8 @@ module.exports = function (router, db) {
 									trackId: true,
 								 	trackLatLng: true,
 									trackRegionTags: true, 
-								 	trackLevel: true, 
+								 	trackLevel: true,
+								 	trackType: true,
 								 	trackFav: true,
 								 	trackGPX: true, 
 								 	trackName: true, 
@@ -35,7 +36,7 @@ module.exports = function (router, db) {
 	});
 
 	// Get a single track
-	router.get('/tracks/:trackId', function(req, res) {
+	router.get('/v1/tracks/:trackId', function(req, res) {
 		logger.info('get track info for: ' + req.params.trackId);
 		var trackId = req.params.trackId;
 		db.collection('tracks', function (err, collection) {
@@ -52,7 +53,7 @@ module.exports = function (router, db) {
 
 	// Get the geotags structure for a single track
 	// This getter is here for compatibility with static version of rikitraki
-	router.get('/tracks/:trackId/geotags', function(req, res) {
+	router.get('/v1/tracks/:trackId/geotags', function(req, res) {
 		logger.info('get geotags for: ' + req.params.trackId);
 		var trackId = req.params.trackId;
 		db.collection('tracks', function (err, collection) {
@@ -73,7 +74,7 @@ module.exports = function (router, db) {
 	}); 
 
 	// Get GPX for a track
-	router.get('/tracks/:trackId/GPX', function(req, res) {
+	router.get('/v1/tracks/:trackId/GPX', function(req, res) {
 		logger.info('get GPX for: ' + req.params.trackId);
 		var trackId = req.params.trackId;
 		db.collection('tracks', function (err, collection) {
@@ -88,6 +89,59 @@ module.exports = function (router, db) {
 				}
 			});
 		});
+	}); 
+
+	// Get thumbnail for a track
+	router.get('/v1/tracks/:trackId/thumbnail/:picIndex', function(req, res) {
+		logger.info('get thumbnail for: ' + req.params.trackId);
+		var trackId = req.params.trackId;
+		var picIndex = parseInt(req.params.picIndex);
+		if (isNaN(picIndex)) {
+			logger.warn('invalid thumb index');
+			res.status(404).send({error: 'NotFound', description: 'invalid thumbnail index'});
+		} else {
+			db.collection('tracks', function (err, collection) {
+				collection.findOne({'trackId' : trackId}, function (err, item) {
+					if (item) {
+						if ((picIndex >= item.trackPhotos.length) || (picIndex < 0)) {
+							logger.warn('thumb not found');
+							res.status(404).send({error: 'NotFound', description: 'thumbnail not found'});
+						} else {
+							// Build the response 
+							res.setHeader("Content-Type", "image/jpeg");
+							res.send(item.trackPhotos[picIndex].picThumbBlob.buffer);
+						}
+					} else { 
+						logger.warn('not found');
+						res.status(404).send({error: 'NotFound', description: 'track id not found'});
+					}
+				});
+			});
+		}
+	}); 
+
+	// Get picture for a track
+	router.get('/v1/tracks/:trackId/picture/:picIndex', function(req, res) {
+		logger.info('get picture for: ' + req.params.trackId);
+		var trackId = req.params.trackId;
+		var picIndex = parseInt(req.params.picIndex);
+		if (isNaN(picIndex)) {
+			logger.warn('invalid picture index');
+			res.status(404).send({error: 'NotFound', description: 'invalid picture index'});
+		} else {
+			db.collection('pictures', function (err, collection) {
+				collection.findOne({'trackId' : trackId, 'picIndex' : picIndex}, function (err, item) {
+					if (item) {
+						// Build the response 
+						res.setHeader("Content-Type", "image/jpeg");
+						res.send(item.picBlob.buffer);
+					} else { 
+						logger.warn('not found');
+						res.status(404).send({error: 'NotFound', description: 'picture not found'});
+					}
+				});
+			});
+		}
 	}); 
 
 }
