@@ -5,7 +5,7 @@ var express = require('express');
 var router = express.Router();
 var mongo = require('mongodb');
 var mongoClient = mongo.MongoClient;
-var MONGO_URL = process.env.OPENSHIFT_MONGODB_DB_URL || 'mongodb://127.0.0.1/rikitraki';
+var MONGO_URL = process.env.OPENSHIFT_MONGODB_DB_URL ? (process.env.OPENSHIFT_MONGODB_DB_URL + '/rikitrakiws') : 'mongodb://127.0.0.1/rikitraki';
 
 mongoClient.connect(MONGO_URL, function(err, db) {
 	// if(err) throw err;
