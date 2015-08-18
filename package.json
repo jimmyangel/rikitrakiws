@@ -1,17 +1,17 @@
 {
-  "name": "OpenShift-Sample-App",
-  "version": "1.0.0",
-  "description": "OpenShift Sample Application",
+  "name": "rikitrakiws",
+  "version": "0.0.1",
+  "description": "Web services for RikiTraki",
   "keywords": [
-    "OpenShift",
+    "rikitraki",
     "Node.js",
     "application",
     "openshift"
   ],
   "author": {
-    "name": "OpenShift",
-    "email": "ramr@example.org",
-    "url": "http://www.openshift.com/"
+    "name": "Ricardo Morin",
+    "email": "rmorinricardo@gmail.com",
+    "url": "rikitraki.com"
   },
   "homepage": "http://www.openshift.com/",
   "repository": {
@@ -25,11 +25,13 @@
   },
 
   "dependencies": {
-    "express": "~3.4.4"
+    "express": "^4.13.3",
+    "log4js": "^0.6.26",
+    "mongodb": "^2.0.40"
   },
   "devDependencies": {},
   "bundleDependencies": [],
 
   "private": true,
-  "main": "server.js"
+  "main": "rikitrakiws.js"
 }
