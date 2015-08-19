@@ -7,7 +7,7 @@ module.exports = function (router, db) {
 	router.get('/v1/tracks', function(req, res) {
 		logger.info('get tracks...');
 		db.collection('tracks', function (err, collection) {
-			var first = true;
+			// var first = true;
 			collection.find({}, {_id: false,
 									trackId: true,
 								 	trackLatLng: true,
@@ -20,16 +20,21 @@ module.exports = function (router, db) {
 								 	trackDescription: true,
 								 	hasPhotos: true}, function(err, stream) {
 				// Build the response json document by document
-				res.setHeader('Content-Type', 'application/json');
-				res.write('{"tracks" : {');
+				// Using send instead of streaming via writes works better for etag and caching
+				// res.setHeader('Content-Type', 'application/json');
+				var result = {};
+				result.tracks = {};
+				// res.write('{"tracks" : {');
 				stream.on('data', function(data) {
-					res.write((first ? '' : ',') + '"' + data.trackId + '":');
-					res.write(JSON.stringify(data));
-					first = false;
+					// res.write((first ? '' : ',') + '"' + data.trackId + '":');
+					// res.write(JSON.stringify(data));
+					result.tracks[data.trackId] = data;
+					// first = false;
 				});
 				stream.on('end', function () {
-					res.write('}}');
-					res.end();
+					// res.write('}}');
+					// res.end();
+					res.send(result);
 				});
 			});
 		}); 
@@ -40,7 +45,7 @@ module.exports = function (router, db) {
 		logger.info('get track info for: ' + req.params.trackId);
 		var trackId = req.params.trackId;
 		db.collection('tracks', function (err, collection) {
-			collection.findOne({'trackId' : trackId}, function (err, item) {
+			collection.findOne({'trackId' : trackId}, {_id: false, trackGPXBlob: false, trackPhotos: false}, function (err, item) {
 				if (item) {
 					res.send(item);
 				} else { 
