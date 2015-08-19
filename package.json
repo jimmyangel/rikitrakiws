@@ -2,15 +2,35 @@
   "name": "rikitrakiws",
   "version": "0.0.1",
   "description": "Web services for RikiTraki",
-  "main": "rikitrakiws.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "keywords": [
+    "rikitraki",
+    "Node.js",
+    "application",
+    "openshift"
+  ],
+  "author": {
+    "name": "Ricardo Morin",
+    "email": "rmorinricardo@gmail.com",
+    "url": "rikitraki.com"
   },
-  "author": "Ricardo Morin",
   "license": "MIT",
+  "homepage": "http://rikitraki.com/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/openshift/origin-server"
+  },
+
+  "engines": {
+    "node": ">= 0.6.0",
+    "npm": ">= 1.0.0"
+  },
+
   "dependencies": {
     "express": "^4.13.3",
     "log4js": "^0.6.26",
     "mongodb": "^2.0.40"
-  }
+  },
+  "devDependencies": {},
+  "bundleDependencies": [],
+  "main": "rikitrakiws.js"
 }
