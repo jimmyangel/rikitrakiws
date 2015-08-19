@@ -1,6 +1,6 @@
 # RikiTrakiWS
 
-This repository contains the code for the web services supporting RikiTRaki, a hiking log web application: [RikiTraki.com](http://rikitraki.com). The data is hosted hosted on a MongoDB database to which this project provides a CRUD interface using REST web services.
+This repository contains the code for the web services supporting RikiTRaki, a hiking log web application: [RikiTraki.com](http://rikitraki.com). Web Services and database are hosted in OpenShift. The data is maintained on a MongoDB database to which this project provides a CRUD interface using REST web services.
 
 **NOTE: RikiTrakiWS is in the early stages of development**
 
