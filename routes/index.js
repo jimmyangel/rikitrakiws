@@ -6,9 +6,11 @@ var router = express.Router();
 var mongo = require('mongodb');
 var mongoClient = mongo.MongoClient;
 var MONGO_URL = process.env.OPENSHIFT_MONGODB_DB_URL ? (process.env.OPENSHIFT_MONGODB_DB_URL + 'rikitrakiws') : 'mongodb://127.0.0.1/rikitraki';
+var JWT_SECRET = 'eventually instead of this we will use a public key';
 
 mongoClient.connect(MONGO_URL, function(err, db) {
 	// if(err) throw err;
+
 	if (err) {
 		logger.error('cannot connect to database');
 	}
@@ -27,7 +29,8 @@ mongoClient.connect(MONGO_URL, function(err, db) {
 
 	// List of api resources below
 	require('./tracks')(router, db);
-	// require('./users')(router, db); // We will deal with users later
+	require('./users')(router, db); 
 });
 
-module.exports = router;
+module.exports.router = router;
+module.exports.JWT_SECRET = JWT_SECRET;

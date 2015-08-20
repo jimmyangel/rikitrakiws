@@ -1,8 +1,28 @@
 // API router for track resources
+var passport = require('passport');
+var JwtStrategy = require('passport-jwt').Strategy;
+var JWT_SECRET = require('./index').JWT_SECRET;
+
 var log4js = require('log4js');
 var logger = log4js.getLogger();
 
+var shortid = require('shortid');
+var schemas = require('../schemas/schemas').schemas;
+var JaySchema = require('jayschema');
+var js = new JaySchema();
+
 module.exports = function (router, db) {
+
+	var opts = {};
+	opts.secretOrKey = JWT_SECRET;
+	passport.use(new JwtStrategy(opts, 
+		function(jwt_payload, callback) {
+			logger.info('jwt subject is ' + jwt_payload.sub);
+			callback(null, jwt_payload.sub);
+		}
+	));
+	var isValidToken = passport.authenticate('jwt', { session : false });
+
 	// Get all tracks
 	router.get('/v1/tracks', function(req, res) {
 		logger.info('get tracks...');
@@ -39,6 +59,21 @@ module.exports = function (router, db) {
 			});
 		}); 
 	});
+
+	// Create a new track (must have valid token to succeed)
+	router.post('/v1/tracks', isValidToken, function (req, res) {
+		logger.info('add track');
+		// logger.info(schemas.trackSchema);
+		js.validate(req.body, schemas.trackSchema, function (errs) {
+			if (errs) {
+				logger.error('invalid json');
+				res.status(400).send({error: 'InvalidInput', description: errs});
+			} else {
+				res.send(shortid.generate());
+			}
+		});
+
+	})
 
 	// Get a single track
 	router.get('/v1/tracks/:trackId', function(req, res) {
