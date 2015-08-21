@@ -28,8 +28,9 @@ mongoClient.connect(MONGO_URL, function(err, db) {
 	});
 
 	// List of api resources below
-	require('./tracks')(router, db);
 	require('./users')(router, db); 
+	require('./tracks')(router, db);
+
 });
 
 module.exports.router = router;

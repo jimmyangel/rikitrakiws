@@ -10,20 +10,19 @@ var loglevel = process.env.LOGLEVEL || 'DEBUG';
 logger.setLevel(loglevel);
 
 app.use(log4js.connectLogger(log4js.getLogger('http'), { level: 'auto' }));
-app.use(bodyParser.json());
+app.use(bodyParser.json({limit: '1mb'}));
 
 app.use('/api/', require('./routes/').router);
 
-app.use(function(error, req, res, next) {
-	if (error instanceof SyntaxError) {
-		logger.error('input error', error);
-		res.status(400).send({error: 'InvalidInput', description: 'syntax error in input'});
+/* app.use(function(error, req, res, next) {
+	if (error) {
+		logger.error('InvalidInput', error.message);
+		res.status(error.status).send({error: 'InvalidInput', description: error.message});		
 	} else {
-		next();	
+		next();
 	}
-});
+}); */
 
 app.listen(port, ipaddress, function () {
 	logger.info('starting rikitrakiws', this.address());
 });
-

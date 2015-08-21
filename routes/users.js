@@ -8,6 +8,11 @@ var JWT_ISSUER = 'rikitraki.com';
 var log4js = require('log4js');
 var logger = log4js.getLogger();
 
+var schemas = require('../schemas/schemas').schemas;
+var validator = require('is-my-json-valid');
+
+var bcrypt = require('bcryptjs');
+
 module.exports = function (router, db) {
 	// var api = router.route('/api/users');
 
@@ -15,9 +20,9 @@ module.exports = function (router, db) {
 		function(username, password, callback) {
 			db.collection('users', function (err, collection) {
 				collection.findOne({'username' : username}, function (err, user) {
-					logger.info('looking for user' + user.username + ' ' + user.password);
 					if (user) {
-						if (user.password === password) {
+						if (bcrypt.compareSync(password, user.password)) {
+						//if (user.password === password) {
 							return callback(null, username);
 						} else {
 							return callback(null, false);
@@ -32,10 +37,45 @@ module.exports = function (router, db) {
 
 	var isAuthenticated = passport.authenticate('basic', { session : false });
 
+	// Authenticate and get a token for subsequent protected API access
 	router.get('/v1/token', isAuthenticated, function(req, res) {
 		logger.info('get token...');
 		var token = jwt.sign({iss: JWT_ISSUER, sub:  req.user}, JWT_SECRET);
 		res.send(token);
+	});
+
+	// Create a user via invitation
+	router.post('/v1/users', function(req, res) {
+		logger.info('add user');
+		var v = validator(schemas.userRegistrationSchema);
+		if (v(req.body)) {
+			db.collection('invitations', function (err, collection) {
+				collection.findOne({'invitationCode' : req.body.invitationCode}, function (err, item) {
+					if ((!item) || (item.email !== req.body.email)) {
+						logger.error('no invitation found');
+						res.status(404).send({error: 'MissingInvitation', 'description': 'Only invited users can register'});
+					} else {
+						req.body.password = bcrypt.hashSync(req.body.password, 8);
+						db.collection('users').insert(req.body, {w: 1}, function(err) {
+							if (err) {
+								if (err.code === 11000) {
+									res.status(422).send({error: 'Duplicate', 'description': 'username already exists'});			
+								} else {
+									logger.error('database error', err.code);
+									res.status(507).send({error: 'DatabaseInsertError', 'description': err.message});		
+								}	
+							} else {
+								res.status(201).send({username: req.body.username});
+							}
+						}); 
+					}
+				});
+			});
+
+		} else {
+			logger.error('validator ', v.errors);
+			res.status(400).send({error: 'InvalidInput','description': v.errors});			
+		}
 	});
 
 // We don't really need an API to get user info

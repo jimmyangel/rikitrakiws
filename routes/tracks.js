@@ -8,8 +8,7 @@ var logger = log4js.getLogger();
 
 var shortid = require('shortid');
 var schemas = require('../schemas/schemas').schemas;
-var JaySchema = require('jayschema');
-var js = new JaySchema();
+var validator = require('is-my-json-valid');
 
 module.exports = function (router, db) {
 
@@ -27,18 +26,32 @@ module.exports = function (router, db) {
 	router.get('/v1/tracks', function(req, res) {
 		logger.info('get tracks...');
 		db.collection('tracks', function (err, collection) {
+			logger.info(req.query);
+			var p;
+			if (req.query.proj === 'small') {
+				p = {_id: false,
+						trackId: true,
+						trackLatLng: true,
+						trackRegionTags: true, 
+					 	trackLevel: true,
+					 	trackType: true,
+					 	trackFav: true,
+					 	trackName: true}
+			} else {
+				p = {_id: false,
+						trackId: true,
+						trackLatLng: true,
+						trackRegionTags: true, 
+					 	trackLevel: true,
+					 	trackType: true,
+					 	trackFav: true,
+					 	trackGPX: true, 
+					 	trackName: true, 
+					 	trackDescription: true,
+					 	hasPhotos: true}				
+			}
 			// var first = true;
-			collection.find({}, {_id: false,
-									trackId: true,
-								 	trackLatLng: true,
-									trackRegionTags: true, 
-								 	trackLevel: true,
-								 	trackType: true,
-								 	trackFav: true,
-								 	trackGPX: true, 
-								 	trackName: true, 
-								 	trackDescription: true,
-								 	hasPhotos: true}, function(err, stream) {
+			collection.find({}, {limit: 1000, fields: p}, function(err, stream) {
 				// Build the response json document by document
 				// Using send instead of streaming via writes works better for etag and caching
 				// res.setHeader('Content-Type', 'application/json');
@@ -63,16 +76,24 @@ module.exports = function (router, db) {
 	// Create a new track (must have valid token to succeed)
 	router.post('/v1/tracks', isValidToken, function (req, res) {
 		logger.info('add track');
-		// logger.info(schemas.trackSchema);
-		js.validate(req.body, schemas.trackSchema, function (errs) {
-			if (errs) {
-				logger.error('invalid json');
-				res.status(400).send({error: 'InvalidInput', description: errs});
-			} else {
-				res.send(shortid.generate());
-			}
-		});
+		var v = validator(schemas.trackSchema);
 
+		if (v(req.body)) {
+			req.body.trackId = shortid.generate();
+
+			db.collection('tracks').insert(req.body, {w: 1}, function(err) {
+				if (err) {
+					logger.error('database error', err.message);
+					res.status(507).send({error: 'DatabaseInsertError', 'description': err.message});			
+				} else {
+					res.status(201).send({trackId: req.body.trackId});
+				}
+			}); 
+
+		} else {
+			logger.error('validator ', v.errors);
+			res.status(400).send({error: 'InvalidInput','description': v.errors});			
+		}
 	})
 
 	// Get a single track

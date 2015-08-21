@@ -24,9 +24,10 @@
     "npm": ">= 1.0.0"
   },
   "dependencies": {
+    "bcryptjs": "^2.2.1",
     "body-parser": "^1.13.3",
     "express": "^4.13.3",
-    "jayschema": "^0.3.1",
+    "is-my-json-valid": "^2.12.1",
     "jsonwebtoken": "^5.0.5",
     "log4js": "^0.6.26",
     "mongodb": "^2.0.40",
