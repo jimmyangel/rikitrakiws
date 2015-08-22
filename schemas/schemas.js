@@ -28,7 +28,7 @@ var schemas = {
 		properties: {
 			username: {type: 'string'},
 			email: {type: 'string', format: 'email'},
-			password: {type: 'string'},
+			password: {type: 'string', maxLength: 18},
 			invitationCode: {type: 'string'}
 		},
 		additionalProperties: false,

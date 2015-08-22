@@ -50,24 +50,36 @@ module.exports = function (router, db) {
 					 	trackDescription: true,
 					 	hasPhotos: true}				
 			}
-			// var first = true;
-			collection.find({}, {limit: 1000, fields: p}, function(err, stream) {
-				// Build the response json document by document
-				// Using send instead of streaming via writes works better for etag and caching
-				// res.setHeader('Content-Type', 'application/json');
+			var query = {};
+			if (req.query.latlng) {
+				var latlng = req.query.latlng.split(',');
+				var lnglat = [];
+				var distance = 0;
+				if (latlng.length === 2) {
+					lnglat[1] = parseFloat(latlng[0]);
+					lnglat[0] = parseFloat(latlng[1]);
+					if ((lnglat[0] < 180) && (lnglat[0] > -180) && (lnglat[1] < 90) && (lnglat[1] > -90)) {
+						if (req.query.distance) {
+							var distance = parseInt(req.query.distance);
+							distance = distance ? distance : 0;
+						}
+						query = {trackGeoJson: {$near: {$geometry: {type: "Point", coordinates: lnglat}, '$maxDistance': distance}}}
+						logger.info('query', query);	
+					} 
+				}
+			}
+			collection.find(query, {limit: 1000, fields: p}, function(err, stream) {
 				var result = {};
 				result.tracks = {};
-				// res.write('{"tracks" : {');
 				stream.on('data', function(data) {
-					// res.write((first ? '' : ',') + '"' + data.trackId + '":');
-					// res.write(JSON.stringify(data));
 					result.tracks[data.trackId] = data;
-					// first = false;
 				});
 				stream.on('end', function () {
-					// res.write('}}');
-					// res.end();
-					res.send(result);
+					if (Object.keys(result.tracks).length === 0) {
+						res.status(404).send({error: 'NotFound', description: 'query returned no data'});
+					} else {
+						res.send(result);
+					}
 				});
 			});
 		}); 
@@ -80,6 +92,8 @@ module.exports = function (router, db) {
 
 		if (v(req.body)) {
 			req.body.trackId = shortid.generate();
+			// Format trailhead location as GEOJson to enable geospatial queries (reverse lat/lon to lon/lat)
+			req.body.trackGeoJson = {type: 'Point', coordinates: [req.body.trackLatLng[1], req.body.trackLatLng[0]]}
 
 			db.collection('tracks').insert(req.body, {w: 1}, function(err) {
 				if (err) {
