@@ -1,13 +1,35 @@
 # RikiTrakiWS
 
-This repository contains the code for the web services supporting RikiTRaki, a hiking log web application: [RikiTraki.com](http://rikitraki.com). Web Services and database are hosted in OpenShift. The data is maintained on a MongoDB database to which this project provides a CRUD interface using REST web services.
+This repository contains the code for the web services supporting RikiTraki, a hiking log web application: [RikiTraki.com](http://rikitraki.com/TestDB). Web Services and database are hosted in OpenShift. The data is maintained on a MongoDB database to which this project provides a CRUD interface using REST web services.
 
-**NOTE: RikiTrakiWS is in the early stages of development**
+**API:**
 
-**TO DO:**
+URL Format: `{service-url}/api/{version}/{resource}`, e.g., : `https://rikitrakiws-rikitraki.rhcloud.com/api/v1/tracks/'`
 
-1. GET methods to replace static interface
-2. Find hosting for MongoDB and REST services
-3. Replace current RikiTraki static with REST interface
-4. Authenticated POST for adding new tracks
-5. User registration
+All results in JSON format except images and GPX files.
+
+SSL is required on all authenticated/authorized calls.
+
+**Resources**
+
+|Resource|Verb|Description|Status Codes|
+|---|---|---|---|
+|`/token`|GET|Retrieves a new JWT token for API calls that require authorization. Requires basic authentication (userid/password)|200:&nbsp;Success<br>401:&nbsp;Unauthorized
+|`/users`|POST|Registers a new user. Requires a valid inviation code associated with a submitted email address. Requires a valid JWT token in the header (Authorization: JWT {token}). Returns username (same as submitted)|201:&nbsp;Success<br>400:&nbsp;Invalid input<br>401:&nbsp;Unauthorized<br>404:&nbsp;Missing&nbsp;invitation&nbsp;code<br>422:&nbsp;Duplicate<br>507:&nbsp;Database&nbsp;error
+|`/tracks/`|GET|Returns a list of tracks.|200:&nbsp;Success<br>404:&nbsp;Not found
+|`/tracks/?latlng={lat},{long}&distance={d}`|GET|Returns a list of tracks near a given location by a given distance in meters.|200:&nbsp;Success<br>404:&nbsp;Not found
+|`/tracks/?small=yes`|GET|Returns abbreviated version of track list. Can be combined with geospatial search above.|200:&nbsp;Success<br>404:&nbsp;Not found
+|`/tracks/`|POST|Creates a new track. JSON document in body. Requires a valid JWT token in the header (Authorization: JWT {token}). Returns trackId.|201:&nbsp;Success<br>400:&nbsp;Invalid input<br>401:&nbsp;Unauthorized<br>507:&nbsp;Database&nbsp;error
+|`/tracks/{trackId}`|GET|Returns a single track.|200:&nbsp;Success<br>404:&nbsp;Not found
+|`/tracks/{trackId}/geotags`|GET|Returns the list of photo geotags for a given track.|200:&nbsp;Success<br>404:&nbsp;Not found
+|`/tracks/{trackId}/GPX`|GET|Returns the GPX file associated with a given track in application/gpx+xml format.|200:&nbsp;Success<br>404:&nbsp;Not found
+|`/tracks/{trackId}/thumbnail/{picIndex}`|GET|Returns a thumbnail picture for index picIndex in image/jpeg format.|200:&nbsp;Success<br>404:&nbsp;Not found
+|`/tracks/{trackId}/picture/{picIndex}`|GET|Returns a thumbnail picture for index picIndex in image/jpeg format.|200:&nbsp;Success<br>404:&nbsp;Not found
+
+
+
+
+
+
+
+**NOTE: RikiTrakiWS is under development**
