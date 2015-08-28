@@ -126,6 +126,25 @@ module.exports = function (router, db) {
 		});
 	}); 
 
+	// Get motd
+	router.get('/v1/motd', function(req, res) {
+		logger.info('get motd');
+		var trackId = req.params.trackId;
+		db.collection('motd', function (err, collection) {
+			collection.findOne({}, {_id: false}, function (err, item) {
+				if (item) {
+					var result = {};
+					result.motd = item;
+					res.send(result);
+				} else { 
+					logger.warn('motd not found');
+					res.status(404).send({error: 'NotFound', description: 'motd not found'});
+				}
+			});
+		});
+	}); 
+
+
 	// Get the geotags structure for a single track
 	// This getter is here for compatibility with static version of rikitraki
 	router.get('/v1/tracks/:trackId/geotags', function(req, res) {
