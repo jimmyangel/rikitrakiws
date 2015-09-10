@@ -98,7 +98,7 @@ module.exports = function (router, db) {
 			db.collection('tracks').insert(req.body, {w: 1}, function(err) {
 				if (err) {
 					logger.error('database error', err.message);
-					res.status(507).send({error: 'DatabaseInsertError', 'description': err.message});			
+					res.status(507).send({error: 'DatabaseInsertError', description: err.message});			
 				} else {
 					res.status(201).send({trackId: req.body.trackId});
 				}

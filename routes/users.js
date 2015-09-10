@@ -46,26 +46,27 @@ module.exports = function (router, db) {
 
 	// Create a user via invitation
 	router.post('/v1/users', function(req, res) {
-		logger.info('add user');
+		logger.info('add user', req.body);
 		var v = validator(schemas.userRegistrationSchema);
 		if (v(req.body)) {
 			db.collection('invitations', function (err, collection) {
 				collection.findOne({'invitationCode' : req.body.invitationCode}, function (err, item) {
-					if ((!item) || (item.email !== req.body.email)) {
-						logger.error('no invitation found');
-						res.status(404).send({error: 'MissingInvitation', 'description': 'Only invited users can register'});
+					if ((!item) || (item.email != req.body.email)) {
+						res.status(404).send({error: 'MissingInvitation', description: 'Only invited users can register'});
 					} else {
 						req.body.password = bcrypt.hashSync(req.body.password, 8);
 						db.collection('users').insert(req.body, {w: 1}, function(err) {
 							if (err) {
 								if (err.code === 11000) {
-									res.status(422).send({error: 'Duplicate', 'description': 'username already exists'});			
+									res.status(422).send({error: 'Duplicate', description: 'Username or email already exists'});			
 								} else {
 									logger.error('database error', err.code);
-									res.status(507).send({error: 'DatabaseInsertError', 'description': err.message});		
+									res.status(507).send({error: 'DatabaseInsertError', description: err.message});		
 								}	
 							} else {
-								res.status(201).send({username: req.body.username});
+								var token = jwt.sign({iss: JWT_ISSUER, sub: req.body.username}, JWT_SECRET);
+								res.status(201).send(token);
+								// res.status(201).send({username: req.body.username});
 							}
 						}); 
 					}

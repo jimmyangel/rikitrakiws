@@ -18,7 +18,8 @@ mongoClient.connect(MONGO_URL, function(err, db) {
 	router.use(function (req, res, next) {
 		// Set up CORS headers
 		res.header("Access-Control-Allow-Origin", "*");
-  		res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+		res.header("Access-Control-Allow-Credentials: true");
+  		res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
 		if (err) {
 			logger.error('500 - cannot connect to database');
 			res.status(500).send({error: 'DBError', description: 'cannot connect to database'});

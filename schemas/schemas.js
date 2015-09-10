@@ -26,10 +26,10 @@ var schemas = {
 	userRegistrationSchema: {
 		type: 'object',
 		properties: {
-			username: {type: 'string'},
+			username: {type: 'string', pattern: '^[^~,;%\\`\'\"<>{}()\\[\\]/]*$', minLength: 6, maxLength: 40},
 			email: {type: 'string', format: 'email'},
-			password: {type: 'string', maxLength: 18},
-			invitationCode: {type: 'string'}
+			password: {type: 'string', pattern: '^[^~,;%\\`\'\"<>{}()\\[\\]/]*$', minLength: 6, maxLength: 18},
+			invitationCode: {type: 'string', minLength:4, maxLength:20}
 		},
 		additionalProperties: false,
 		required: ['username', 'email', 'password', 'invitationCode']
