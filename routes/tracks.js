@@ -1,7 +1,5 @@
 // API router for track resources
 var passport = require('passport');
-var JwtStrategy = require('passport-jwt').Strategy;
-var JWT_SECRET = require('./index').JWT_SECRET;
 
 var log4js = require('log4js');
 var logger = log4js.getLogger();
@@ -11,15 +9,6 @@ var schemas = require('../schemas/schemas').schemas;
 var validator = require('is-my-json-valid');
 
 module.exports = function (router, db) {
-
-	var opts = {};
-	opts.secretOrKey = JWT_SECRET;
-	passport.use(new JwtStrategy(opts, 
-		function(jwt_payload, callback) {
-			logger.info('jwt subject is ' + jwt_payload.sub);
-			callback(null, jwt_payload.sub);
-		}
-	));
 	var isValidToken = passport.authenticate('jwt', { session : false });
 
 	// Get all tracks
@@ -87,7 +76,8 @@ module.exports = function (router, db) {
 
 	// Create a new track (must have valid token to succeed)
 	router.post('/v1/tracks', isValidToken, function (req, res) {
-		logger.info('add track');
+		logger.info('add track for user ', req.user);
+
 		var v = validator(schemas.trackSchema);
 
 		if (v(req.body)) {

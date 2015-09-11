@@ -8,8 +8,13 @@ var mongoClient = mongo.MongoClient;
 var MONGO_URL = process.env.OPENSHIFT_MONGODB_DB_URL ? (process.env.OPENSHIFT_MONGODB_DB_URL + 'rikitrakiws') : 'mongodb://127.0.0.1/rikitraki';
 var JWT_SECRET = 'eventually instead of this we will use a public key';
 
+var passport = require('passport');
+var BasicStrategy = require('passport-http').BasicStrategy;
+var JwtStrategy = require('passport-jwt').Strategy;
+
+var bcrypt = require('bcryptjs');
+
 mongoClient.connect(MONGO_URL, function(err, db) {
-	// if(err) throw err;
 
 	if (err) {
 		logger.error('cannot connect to database');
@@ -19,7 +24,9 @@ mongoClient.connect(MONGO_URL, function(err, db) {
 		// Set up CORS headers
 		res.header("Access-Control-Allow-Origin", "*");
 		res.header("Access-Control-Allow-Credentials: true");
+		res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE');
   		res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+
 		if (err) {
 			logger.error('500 - cannot connect to database');
 			res.status(500).send({error: 'DBError', description: 'cannot connect to database'});
@@ -27,6 +34,36 @@ mongoClient.connect(MONGO_URL, function(err, db) {
 			next();
 		}
 	});
+
+	// Setup basic authentication middleware
+	passport.use(new BasicStrategy(
+		function(username, password, callback) {
+			db.collection('users', function (err, collection) {
+				collection.findOne({'username' : username}, function (err, user) {
+					if (user) {
+						if (bcrypt.compareSync(password, user.password)) {
+						//if (user.password === password) {
+							return callback(null, username);
+						} else {
+							return callback(null, false);
+						}
+					} else { 
+						return callback(null, false);
+					}
+				});
+			});
+		}
+	));
+
+	// Setup JWT token authentication middleware
+	var opts = {};
+	opts.secretOrKey = JWT_SECRET;
+	passport.use(new JwtStrategy(opts, 
+		function(jwt_payload, callback) {
+			logger.info('jwt subject is ' + jwt_payload.sub);
+			callback(null, jwt_payload.sub);
+		}
+	));
 
 	// List of api resources below
 	require('./users')(router, db); 

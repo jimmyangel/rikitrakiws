@@ -1,6 +1,5 @@
 // API router for user resources
 var passport = require('passport');
-var BasicStrategy = require('passport-http').BasicStrategy;
 var jwt = require('jsonwebtoken');
 var JWT_SECRET = require('./index').JWT_SECRET;
 var JWT_ISSUER = 'rikitraki.com';
@@ -14,32 +13,14 @@ var validator = require('is-my-json-valid');
 var bcrypt = require('bcryptjs');
 
 module.exports = function (router, db) {
-	// var api = router.route('/api/users');
-
-	passport.use(new BasicStrategy(
-		function(username, password, callback) {
-			db.collection('users', function (err, collection) {
-				collection.findOne({'username' : username}, function (err, user) {
-					if (user) {
-						if (bcrypt.compareSync(password, user.password)) {
-						//if (user.password === password) {
-							return callback(null, username);
-						} else {
-							return callback(null, false);
-						}
-					} else { 
-						return callback(null, false);
-					}
-				});
-			});
-		}
-	));
 
 	var isAuthenticated = passport.authenticate('basic', { session : false });
+	var isValidToken = passport.authenticate('jwt', { session : false });
 
 	// Authenticate and get a token for subsequent protected API access
 	router.get('/v1/token', isAuthenticated, function(req, res) {
-		logger.info('get token...');
+		logger.info('get token for user ', req.user);
+
 		var token = jwt.sign({iss: JWT_ISSUER, sub:  req.user}, JWT_SECRET);
 		res.send(token);
 	});
@@ -79,22 +60,12 @@ module.exports = function (router, db) {
 		}
 	});
 
-// We don't really need an API to get user info
-/*
-	router.get('/v1/users', function(req, res) {
-		console.log('get users...');
+	// Get user info per user in valid token
+	router.get('/v1/users/me', isValidToken, function(req, res) {
+		var username = req.user;
+		console.log('get user profile for: ' + username);
 		db.collection('users', function (err, collection) {
-			collection.find().toArray(function (err, items) {
-				res.send(items);
-			});
-		});
-	});
-
-	router.get('/v1/users/:username', function(req, res) {
-		console.log('get user profile for: ' + req.params.username);
-		var username = req.params.username;
-		db.collection('users', function (err, collection) {
-			collection.findOne({'username' : username}, function (err, item) {
+			collection.findOne({'username' : username}, {_id: false, password: false, invitationCode: false}, function (err, item) {
 				if (item) {
 					res.send(item);
 				} else { 
@@ -104,6 +75,45 @@ module.exports = function (router, db) {
 			});
 		});
 	}); 
-*/
 
+	// Update user profile per user valid token
+	// TODO: if changing password, need to check that the old password matches
+	router.put('/v1/users/me', isValidToken, function(req, res) {
+		var username = req.user;
+		console.log('update user profile for: ' + username);
+		var v = validator(schemas.userProfileUpdateSchema);
+		if (v(req.body)) {
+			var updData = {};
+			var isEmpty = true;
+			if (req.body.email) {
+				isEmpty = false;
+				updData.email = req.body.email;
+			}
+			if (req.body.password) {
+				isEmpty = false;
+				updData.password = bcrypt.hashSync(req.body.password, 8);
+			}
+			if (isEmpty) {
+				res.status(400).send({error: 'InvalidInput', description: 'No data'});			
+			} else {
+				db.collection('users', function (err, collection) {
+					collection.updateOne({'username' : username}, {$set: updData}, {w: 1}, function (err, item) {
+						if (err) {
+							if (err.code === 11000) {
+								res.status(422).send({error: 'Duplicate', description: 'Email already exists'});			
+							} else {
+								logger.error('database error', err.code);
+								res.status(507).send({error: 'DatabaseInsertError', description: err.message});		
+							}	
+						} else {
+							res.status(204).send();
+						}
+					});
+				});
+			}
+		} else {
+			logger.error('validator ', v.errors);
+			res.status(400).send({error: 'InvalidInput', description: v.errors});			
+		}
+	});
 }
