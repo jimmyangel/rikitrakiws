@@ -14,6 +14,7 @@ var schemas = {
 				minItems: 1
 			},
 			trackLevel: {type: 'string'},
+			trackType: {type: 'string'},
 			trackFav: {type: 'boolean'},
 			trackGPX: {type: 'string'},
 			trackName: {type: 'string'},
