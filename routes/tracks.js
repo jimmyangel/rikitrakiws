@@ -4,6 +4,8 @@ var passport = require('passport');
 var log4js = require('log4js');
 var logger = log4js.getLogger();
 
+var mongo = require('mongodb');
+
 var shortid = require('shortid');
 var schemas = require('../schemas/schemas').schemas;
 var validator = require('is-my-json-valid');
@@ -82,8 +84,20 @@ module.exports = function (router, db) {
 
 		if (v(req.body)) {
 			req.body.trackId = shortid.generate();
+			req.body.username = req.user;
+			req.body.isDraft = true;
 			// Format trailhead location as GEOJson to enable geospatial queries (reverse lat/lon to lon/lat)
-			req.body.trackGeoJson = {type: 'Point', coordinates: [req.body.trackLatLng[1], req.body.trackLatLng[0]]}
+			req.body.trackGeoJson = {type: 'Point', coordinates: [req.body.trackLatLng[1], req.body.trackLatLng[0]]};
+			// logger.info('track photos data ', req.body.trackPhotos);
+			// If we have pictures, go ahead and generate binary field from dataurl for every thumbnail
+			if (req.body.trackPhotos) {
+				for (var i=0; i<req.body.trackPhotos.length; i++) {
+					var buffer = new Buffer(req.body.trackPhotos[i].picThumbDataUrl.split(",")[1], 'base64');
+					var bField = new mongo.Binary(buffer);
+					req.body.trackPhotos[i].picThumbBlob = bField;
+					delete req.body.trackPhotos[i].picThumbDataUrl;
+				}
+			}
 
 			db.collection('tracks').insert(req.body, {w: 1}, function(err) {
 				if (err) {
