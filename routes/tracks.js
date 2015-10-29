@@ -112,7 +112,25 @@ module.exports = function (router, db) {
 			logger.error('validator ', v.errors);
 			res.status(400).send({error: 'InvalidInput','description': v.errors});			
 		}
-	})
+	});
+
+	// Add a new track picture (must have valid token to succeed)
+	router.post('/v1/tracks/:trackId/picture/:picIndex', isValidToken, function (req, res) {
+		logger.info('add picture for track ', req.params.trackId, ' index ', req.params.picIndex, ' size ', req.body.length);
+		// TODO: Validate that we indeed received a jpeg file by using file-type
+		var picDoc = {};
+		picDoc.trackId = req.params.trackId;
+		picDoc.picIndex = parseInt(req.params.picIndex);
+		picDoc.picBlob = new mongo.Binary(req.body);
+		db.collection('pictures').insert(picDoc, {w: 1}, function(err) {
+			if (err) {
+				logger.error('database error', err.message);
+				res.status(507).send({error: 'DatabaseInsertError', description: err.message});			
+			} else {
+				res.status(201).send({trackId: req.params.trackId, picIndex: req.params.picIndex});
+			}
+		});
+	});
 
 	// Get a single track
 	router.get('/v1/tracks/:trackId', function(req, res) {

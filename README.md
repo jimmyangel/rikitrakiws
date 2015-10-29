@@ -24,7 +24,8 @@ SSL is required on all authenticated/authorized calls.
 |`/tracks/{trackId}/geotags`|GET|Returns the list of photo geotags for a given track.|200:&nbsp;Success<br>404:&nbsp;Not found
 |`/tracks/{trackId}/GPX`|GET|Returns the GPX file associated with a given track in application/gpx+xml format.|200:&nbsp;Success<br>404:&nbsp;Not found
 |`/tracks/{trackId}/thumbnail/{picIndex}`|GET|Returns a thumbnail picture for index picIndex in image/jpeg format.|200:&nbsp;Success<br>404:&nbsp;Not found
-|`/tracks/{trackId}/picture/{picIndex}`|GET|Returns a thumbnail picture for index picIndex in image/jpeg format.|200:&nbsp;Success<br>404:&nbsp;Not found
+|`/tracks/{trackId}/picture/{picIndex}`|GET|Returns a picture for index picIndex in image/jpeg format.|200:&nbsp;Success<br>404:&nbsp;Not found
+|`/tracks/{trackId}/picture/{picIndex}`|POST|Uploads a picture for index picIndex in image/jpeg format.|201:&nbsp;Success<br>404:&nbsp;Not found<br>507:&nbsp;Database error
 
 
 

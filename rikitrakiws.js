@@ -11,6 +11,8 @@ logger.setLevel(loglevel);
 
 app.use(log4js.connectLogger(log4js.getLogger('http'), { level: 'auto' }));
 app.use(bodyParser.json({limit: '1mb'}));
+app.use(bodyParser.raw({limit: '10mb', type: 'image/jpeg'}));
+
 
 app.use('/api/', require('./routes/').router);
 
