@@ -20,7 +20,7 @@ var schemas = {
 			trackName: {type: 'string'},
 			trackDescription: {type: 'string'},
 			hasPhotos: {type: 'boolean'},
-			trackGPXBlob: {type: 'string'},
+			trackGPXBlob: {type: 'string', maxLength: 4000000},
 			trackPhotos: {
 				type: 'array',
 				items: {
@@ -44,6 +44,22 @@ var schemas = {
 		},
 		additionalProperties: false,
 		required: ['trackLatLng', 'trackRegionTags', 'trackLevel', 'trackFav', 'trackGPX', 'trackName', 'trackDescription', 'hasPhotos', 'trackGPXBlob']
+	},
+	trackEditSchema: {
+		type: 'object',
+		properties: {
+			trackRegionTags: {
+				type: 'array',
+				items: { type: 'string'},
+				minItems: 1
+			},
+			trackLevel: {type: 'string'},
+			trackType: {type: 'string'},
+			trackFav: {type: 'boolean'},
+			trackName: {type: 'string'},
+			trackDescription: {type: 'string'},
+		},
+		additionalProperties: false
 	},
 	userRegistrationSchema: {
 		type: 'object',

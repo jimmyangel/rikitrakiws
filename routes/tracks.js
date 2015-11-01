@@ -27,7 +27,9 @@ module.exports = function (router, db) {
 					 	trackLevel: true,
 					 	trackType: true,
 					 	trackFav: true,
-					 	trackName: true}
+					 	trackName: true,
+					 	username: true,
+					 	isDraft: true}
 			} else {
 				p = {_id: false,
 						trackId: true,
@@ -39,7 +41,9 @@ module.exports = function (router, db) {
 					 	trackGPX: true, 
 					 	trackName: true, 
 					 	trackDescription: true,
-					 	hasPhotos: true}				
+					 	hasPhotos: true,
+					 	username: true,
+					 	isDraft: true}				
 			}
 			var query = {};
 			if (req.query.latlng) {
@@ -78,6 +82,8 @@ module.exports = function (router, db) {
 
 	// Create a new track (must have valid token to succeed)
 	router.post('/v1/tracks', isValidToken, function (req, res) {
+
+		//TODO: Sanitize text fields
 		logger.info('add track for user ', req.user);
 
 		var v = validator(schemas.trackSchema);
@@ -131,6 +137,66 @@ module.exports = function (router, db) {
 			}
 		});
 	});
+
+	// Update track info (must have valid token to succeed)
+	router.put('/v1/tracks/:trackId', isValidToken, function(req, res) {
+		//TODO: Sanitize text fields
+
+		logger.info('update track info for: ' + req.params.trackId);
+		var trackId = req.params.trackId;
+		db.collection('tracks', function (err, collection) {
+			collection.findOne({$and: [{'trackId' : trackId}, {'username' : req.user}]}, {_id: false, trackId: true}, function (err, item) {
+				if (item) {
+					collection.updateOne({'trackId' : trackId}, {$set: req.body}, {w: 1}, function (err, uItem) {
+						if (err) {
+							logger.error('database error', err.code);
+							res.status(507).send({error: 'DatabaseUpdateError', description: err.message});		
+						} else {
+							res.status(200).send(item);
+						}
+					});
+				} else { 
+					logger.warn('not found');
+					res.status(403).send({error: 'Forbidden', description: 'track does not belong to requesting user'});
+				}
+			});
+		});
+	}); 
+
+	// Delete track (must have valid token to succeed)
+	router.delete('/v1/tracks/:trackId', isValidToken, function(req, res) {
+
+		logger.info('delete track: ' + req.params.trackId);
+		var trackId = req.params.trackId;
+
+		db.collection('tracks', function (err, tracksCollection) {
+			tracksCollection.findOne({$and: [{'trackId' : trackId}, {'username' : req.user}]}, {_id: false, trackId: true}, function (err, item) {
+				if (item) {
+					db.collection('pictures', function (err, picturesCollection) {
+						picturesCollection.remove({'trackId' : trackId}, {w: 1}, function (err) {
+							if (err) {
+								logger.error('database error', err.code);
+								res.status(507).send({error: 'DatabasePicRemoveError', description: err.message});		
+							} else {
+								logger.info('deleted pictures for track: ' + trackId);
+								tracksCollection.remove({'trackId' : trackId}, {w: 1}, function (err) {
+									if (err) {
+										logger.error('database error', err.code);
+										res.status(507).send({error: 'DatabaseDocRemoveError', description: err.message});
+									} else {
+										res.status(204).send();
+									}
+								});
+							}
+						});
+					});	
+				} else { 
+					logger.warn('not found');
+					res.status(403).send({error: 'Forbidden', description: 'track does not belong to requesting user'});
+				}
+			});
+		});
+	}); 
 
 	// Get a single track
 	router.get('/v1/tracks/:trackId', function(req, res) {
