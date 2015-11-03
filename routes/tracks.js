@@ -9,8 +9,10 @@ var mongo = require('mongodb');
 var shortid = require('shortid');
 var schemas = require('../schemas/schemas').schemas;
 var validator = require('is-my-json-valid');
+var utils = require('../utils/utils');
 
 module.exports = function (router, db) {
+
 	var isValidToken = passport.authenticate('jwt', { session : false });
 
 	// Get all tracks
@@ -105,6 +107,13 @@ module.exports = function (router, db) {
 				}
 			}
 
+			// Sanitize text fields
+			req.body.trackName = utils.sanitize(req.body.trackName, true);
+			req.body.trackDescription = utils.sanitize(req.body.trackDescription);
+			for (var i=0; i<req.body.trackRegionTags.length; i++) {
+				req.body.trackRegionTags[i] = utils.sanitize(req.body.trackRegionTags[i], true);
+			}
+
 			db.collection('tracks').insert(req.body, {w: 1}, function(err) {
 				if (err) {
 					logger.error('database error', err.message);
@@ -144,6 +153,16 @@ module.exports = function (router, db) {
 
 		logger.info('update track info for: ' + req.params.trackId);
 		var trackId = req.params.trackId;
+
+		// Sanitize text fields
+		req.body.trackName = utils.sanitize(req.body.trackName, true);
+		req.body.trackDescription = utils.sanitize(req.body.trackDescription);
+		if (req.body.trackRegionTags) {
+			for (var i=0; i<req.body.trackRegionTags.length; i++) {
+				req.body.trackRegionTags[i] = utils.sanitize(req.body.trackRegionTags[i], true);
+			}
+		}
+
 		db.collection('tracks', function (err, collection) {
 			collection.findOne({$and: [{'trackId' : trackId}, {'username' : req.user}]}, {_id: false, trackId: true}, function (err, item) {
 				if (item) {

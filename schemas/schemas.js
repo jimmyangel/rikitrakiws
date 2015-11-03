@@ -10,15 +10,16 @@ var schemas = {
 			},
 			trackRegionTags: {
 				type: 'array',
-				items: { type: 'string'},
-				minItems: 1
+				items: { type: 'string', maxLength: 100},
+				minItems: 1,
+				maxItems: 5
 			},
-			trackLevel: {type: 'string'},
-			trackType: {type: 'string'},
+			trackLevel: {enum: ['Easy', 'Moderate', 'Difficult']},
+			trackType: {enum: ['Hiking', 'Biking', 'Boating', 'Offroad']},
 			trackFav: {type: 'boolean'},
 			trackGPX: {type: 'string'},
-			trackName: {type: 'string'},
-			trackDescription: {type: 'string'},
+			trackName: {type: 'string', maxLength: 200},
+			trackDescription: {type: 'string', maxLength: 5000},
 			hasPhotos: {type: 'boolean'},
 			trackGPXBlob: {type: 'string', maxLength: 4000000},
 			trackPhotos: {
@@ -26,15 +27,15 @@ var schemas = {
 				items: {
 					type: 'object',
 					properties: {
-						picName: {type: 'string'},
-						picThumb: {type: 'string'},
+						picName: {type: 'string', maxLength: 200},
+						picThumb: {type: 'string', maxLength: 200},
 						picLatLng: {
 							type: 'array',
 							items: {type: 'number'},
 							minItems: 2,
 							maxItems: 2
 						},
-						picCaption: {type: 'string'},
+						picCaption: {type: 'string', maxLength: 200},
 						picThumbDataUrl: {type: 'string', minLength:50, maxLength: 100000}
 					},
 					additionalProperties: false,
@@ -50,14 +51,15 @@ var schemas = {
 		properties: {
 			trackRegionTags: {
 				type: 'array',
-				items: { type: 'string'},
-				minItems: 1
+				items: { type: 'string', maxLength: 100},
+				minItems: 1,
+				maxItems: 5
 			},
-			trackLevel: {type: 'string'},
-			trackType: {type: 'string'},
+			trackLevel: {enum: ['Easy', 'Moderate', 'Difficult']},
+			trackType: {enum: ['Hiking', 'Biking', 'Boating', 'Offroad']},
 			trackFav: {type: 'boolean'},
-			trackName: {type: 'string'},
-			trackDescription: {type: 'string'},
+			trackName: {type: 'string', maxLength: 200},
+			trackDescription: {type: 'string', maxLength: 5000},
 		},
 		additionalProperties: false
 	},
