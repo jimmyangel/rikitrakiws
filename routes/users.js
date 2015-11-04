@@ -77,8 +77,7 @@ module.exports = function (router, db) {
 	}); 
 
 	// Update user profile per user valid token
-	// TODO: if changing password, need to check that the old password matches
-	router.put('/v1/users/me', isValidToken, function(req, res) {
+	router.put('/v1/users/me', isAuthenticated, function(req, res) {
 		var username = req.user;
 		console.log('update user profile for: ' + username);
 		var v = validator(schemas.userProfileUpdateSchema);
@@ -115,5 +114,13 @@ module.exports = function (router, db) {
 			logger.error('validator ', v.errors);
 			res.status(400).send({error: 'InvalidInput', description: v.errors});			
 		}
+	});
+
+	// Remove user profile
+	// TODO: implement collection removal and modify owner for this user's tracks
+	router.delete('/v1/users/me', isAuthenticated, function(req, res) {
+		var username = req.user;
+		logger.info('remove user profile for: ' + username);
+		res.status(204).send();
 	});
 }
