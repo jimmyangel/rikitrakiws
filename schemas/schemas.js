@@ -81,6 +81,21 @@ var schemas = {
 			password: {type: 'string', pattern: '^[^~,;%\\`\'\"<>{}()\\[\\]/]*$', minLength: 6, maxLength: 18}
 		},
 		additionalProperties: false
+	},	
+	resetPasswordSchema: {
+		type: 'object',
+		properties: {
+			password: {type: 'string', pattern: '^[^~,;%\\`\'\"<>{}()\\[\\]/]*$', minLength: 6, maxLength: 18}
+		},
+		additionalProperties: false,
+		required: ['password']
+	},
+	invitationSchema: {
+		type: 'object',
+		properties: {
+			email: {type: 'string', format: 'email'}
+		},
+		additionalProperties: false		
 	}
 }
 

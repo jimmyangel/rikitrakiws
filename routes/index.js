@@ -60,8 +60,7 @@ mongoClient.connect(MONGO_URL, function(err, db) {
 	opts.secretOrKey = JWT_SECRET;
 	passport.use(new JwtStrategy(opts, 
 		function(jwt_payload, callback) {
-			logger.info('jwt subject is ' + jwt_payload.sub);
-			callback(null, jwt_payload.sub);
+			callback(null, jwt_payload.sub, jwt_payload);
 		}
 	));
 
