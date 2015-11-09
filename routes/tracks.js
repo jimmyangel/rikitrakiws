@@ -114,6 +114,8 @@ module.exports = function (router, db) {
 				req.body.trackRegionTags[i] = utils.sanitize(req.body.trackRegionTags[i], true);
 			}
 
+			req.body.createdDate = new Date();
+
 			db.collection('tracks').insert(req.body, {w: 1}, function(err) {
 				if (err) {
 					logger.error('database error', err.message);
@@ -137,6 +139,8 @@ module.exports = function (router, db) {
 		picDoc.trackId = req.params.trackId;
 		picDoc.picIndex = parseInt(req.params.picIndex);
 		picDoc.picBlob = new mongo.Binary(req.body);
+		picDoc.createdDate = new Date();
+
 		db.collection('pictures').insert(picDoc, {w: 1}, function(err) {
 			if (err) {
 				logger.error('database error', err.message);
@@ -162,6 +166,8 @@ module.exports = function (router, db) {
 				req.body.trackRegionTags[i] = utils.sanitize(req.body.trackRegionTags[i], true);
 			}
 		}
+
+		req.body.lastUpdatedDate = new Date();
 
 		db.collection('tracks', function (err, collection) {
 			collection.findOne({$and: [{'trackId' : trackId}, {'username' : req.user}]}, {_id: false, trackId: true}, function (err, item) {

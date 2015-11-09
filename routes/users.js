@@ -86,6 +86,7 @@ module.exports = function (router, db) {
 			db.collection('invitations', function (err, collection) {
 				collection.count(function (err, count) {
 					if (count < MAX_INVITATIONS) {
+						req.body.createdDate = new Date();
 						collection.insert(req.body, {w: 1}, function(err) {
 							if (err) {
 								if (err.code === 11000) {
@@ -129,6 +130,7 @@ module.exports = function (router, db) {
 						res.status(404).send({error: 'MissingInvitation', description: 'Only invited users can register'});
 					} else {
 						req.body.password = bcrypt.hashSync(req.body.password, 8);
+						req.body.createdDate = new Date();
 						db.collection('users').insert(req.body, {w: 1}, function(err) {
 							if (err) {
 								if (err.code === 11000) {
@@ -176,6 +178,7 @@ module.exports = function (router, db) {
 		var v = validator(schemas.userProfileUpdateSchema);
 		if (v(req.body)) {
 			var updData = {};
+
 			var isEmpty = true;
 			if (req.body.email) {
 				isEmpty = false;
@@ -189,6 +192,7 @@ module.exports = function (router, db) {
 				res.status(400).send({error: 'InvalidInput', description: 'No data'});			
 			} else {
 				db.collection('users', function (err, collection) {
+					updData.lastUpdatedDate = new Date();
 					collection.updateOne({'username' : username}, {$set: updData}, {w: 1}, function (err, item) {
 						if (err) {
 							if (err.code === 11000) {
@@ -215,6 +219,7 @@ module.exports = function (router, db) {
 		var v = validator(schemas.userProfileUpdateSchema);
 		if (v(req.body)) {
 			req.body.password = bcrypt.hashSync(req.body.password, 8);
+			req.body.lastUpdatedDate = new Date();
 			db.collection('users', function (err, collection) {
 				collection.updateOne({'username' : req.user}, {$set: req.body}, {w: 1}, function (err, item) {
 					if (err) {
