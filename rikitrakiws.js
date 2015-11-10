@@ -17,11 +17,6 @@ app.use(log4js.connectLogger(log4js.getLogger('http'), { level: 'auto' }));
 app.use(bodyParser.json({limit: '5mb'}));
 app.use(bodyParser.raw({limit: '10mb', type: 'image/jpeg'}));
 
-app.use(function (req, res, next) {
-	res.removeHeader("WWW-Authenticate");
-	next();
-});
-
 app.use('/api/', require('./routes/').router);
 
 /* app.use(function(error, req, res, next) {

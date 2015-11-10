@@ -27,6 +27,8 @@ mongoClient.connect(MONGO_URL, function(err, db) {
 		res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE');
   		res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
 
+  		res.header('WWW-Authenticate', 'FormBased');
+
 		if (err) {
 			logger.error('500 - cannot connect to database');
 			res.status(500).send({error: 'DBError', description: 'cannot connect to database'});

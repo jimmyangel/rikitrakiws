@@ -23,15 +23,23 @@ var bcrypt = require('bcryptjs');
 
 module.exports = function (router, db) {
 
-	var isAuthenticated = passport.authenticate('basic', { session : false });
+	//var isAuthenticated = passport.authenticate('basic', { session : false });
+
 	var isValidToken = passport.authenticate('jwt', { session : false });
 
-	// Authenticate and get a token for subsequent protected API access
-	router.get('/v1/token', isAuthenticated, function(req, res) {
-		logger.info('get token for user ', req.user);
+	router.get('/v1/token', function(req, res, next) {
+		passport.authenticate('basic', { session : false }, function (err, user, info) {
+			if(err) return console.log(err);
 
-		var token = jwt.sign({iss: JWT_ISSUER, sub:  req.user}, JWT_SECRET);
-		res.send(token);
+			if(!user){
+			    res.set('WWW-Authenticate', 'FormBased');
+			    return res.send(401);
+			}
+			logger.info('get token for user ', req.user);
+
+			var token = jwt.sign({iss: JWT_ISSUER, sub:  req.user}, JWT_SECRET);
+			res.send(token);
+		})(req, res, next);
 	});
 
 	// Get reset token for a given email (reset password)
@@ -172,45 +180,54 @@ module.exports = function (router, db) {
 	}); 
 
 	// Update user profile per user valid token
-	router.put('/v1/users/me', isAuthenticated, function(req, res) {
-		var username = req.user;
-		logger.info('update user profile for: ', username);
-		var v = validator(schemas.userProfileUpdateSchema);
-		if (v(req.body)) {
-			var updData = {};
+	router.put('/v1/users/me', function(req, res, next) {
+		passport.authenticate('basic', { session : false }, function (err, user, info) {
+			if(err) return console.log(err);
 
-			var isEmpty = true;
-			if (req.body.email) {
-				isEmpty = false;
-				updData.email = req.body.email;
+			if(!user){
+			    res.set('WWW-Authenticate', 'FormBased');
+			    return res.send(401);
 			}
-			if (req.body.password) {
-				isEmpty = false;
-				updData.password = bcrypt.hashSync(req.body.password, 8);
-			}
-			if (isEmpty) {
-				res.status(400).send({error: 'InvalidInput', description: 'No data'});			
-			} else {
-				db.collection('users', function (err, collection) {
-					updData.lastUpdatedDate = new Date();
-					collection.updateOne({'username' : username}, {$set: updData}, {w: 1}, function (err, item) {
-						if (err) {
-							if (err.code === 11000) {
-								res.status(422).send({error: 'Duplicate', description: 'Email already exists'});			
+			var username = req.user;
+			logger.info('update user profile for: ', username);
+			var v = validator(schemas.userProfileUpdateSchema);
+			if (v(req.body)) {
+				var updData = {};
+
+				var isEmpty = true;
+				if (req.body.email) {
+					isEmpty = false;
+					updData.email = req.body.email;
+				}
+				if (req.body.password) {
+					isEmpty = false;
+					updData.password = bcrypt.hashSync(req.body.password, 8);
+				}
+				if (isEmpty) {
+					res.status(400).send({error: 'InvalidInput', description: 'No data'});			
+				} else {
+					db.collection('users', function (err, collection) {
+						updData.lastUpdatedDate = new Date();
+						collection.updateOne({'username' : username}, {$set: updData}, {w: 1}, function (err, item) {
+							if (err) {
+								if (err.code === 11000) {
+									res.status(422).send({error: 'Duplicate', description: 'Email already exists'});			
+								} else {
+									logger.error('database error', err.code);
+									res.status(507).send({error: 'DatabaseUpdateError', description: err.message});		
+								}	
 							} else {
-								logger.error('database error', err.code);
-								res.status(507).send({error: 'DatabaseUpdateError', description: err.message});		
-							}	
-						} else {
-							res.status(204).send();
-						}
+								res.status(204).send();
+							}
+						});
 					});
-				});
+				}
+			} else {
+				logger.error('validator ', v.errors);
+				res.status(400).send({error: 'InvalidInput', description: v.errors});			
 			}
-		} else {
-			logger.error('validator ', v.errors);
-			res.status(400).send({error: 'InvalidInput', description: v.errors});			
-		}
+
+		})(req, res, next);
 	});
 
 	// Reset user password per user valid reset token
@@ -234,14 +251,5 @@ module.exports = function (router, db) {
 			logger.error('validator ', v.errors);
 			res.status(400).send({error: 'InvalidInput', description: v.errors});	
 		}
-	});
-
-	// Remove user profile
-	// TODO: should we really implement this? Seems to be useless functionality
-	router.delete('/v1/users/me', isAuthenticated, function(req, res) {
-		var username = req.user;
-		logger.info('remove (not implemented) user profile for: ' + username);
-		// Always return 501, not impemented
-		res.status(501).send();
 	});
 }
