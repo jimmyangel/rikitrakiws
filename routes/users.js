@@ -29,15 +29,17 @@ module.exports = function (router, db) {
 
 	router.get('/v1/token', function(req, res, next) {
 		passport.authenticate('basic', { session : false }, function (err, user, info) {
-			if(err) return console.log(err);
-
-			if(!user){
-			    res.set('WWW-Authenticate', 'FormBased');
-			    return res.send(401);
+			if(err) {
+				logger.error('authentication error', err);
+				return;
 			}
-			logger.info('get token for user ', req.user);
-
-			var token = jwt.sign({iss: JWT_ISSUER, sub:  req.user}, JWT_SECRET);
+			if(!user){
+			    res.set('WWW-Authenticate', 'AJAXFormBased');
+			    res.send(401);
+			    return;
+			}
+			logger.info('get token for user ', user);
+			var token = jwt.sign({iss: JWT_ISSUER, sub:  user}, JWT_SECRET);
 			res.send(token);
 		})(req, res, next);
 	});
@@ -179,16 +181,20 @@ module.exports = function (router, db) {
 		});
 	}); 
 
-	// Update user profile per user valid token
+	// Update user profile per user credentials
 	router.put('/v1/users/me', function(req, res, next) {
 		passport.authenticate('basic', { session : false }, function (err, user, info) {
-			if(err) return console.log(err);
-
-			if(!user){
-			    res.set('WWW-Authenticate', 'FormBased');
-			    return res.send(401);
+			console.log('authenticating ', user);
+			if(err) {
+				logger.error('authentication error', err);
+				return;
 			}
-			var username = req.user;
+			if(!user){
+			    res.set('WWW-Authenticate', 'AJAXFormBased');
+			    res.send(401);
+			    return;
+			}
+			var username = user;
 			logger.info('update user profile for: ', username);
 			var v = validator(schemas.userProfileUpdateSchema);
 			if (v(req.body)) {
