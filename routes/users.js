@@ -5,8 +5,8 @@ var JWT_SECRET = require('./index').JWT_SECRET;
 var JWT_ISSUER = 'rikitraki.com';
 
 var MAX_INVITATIONS = 1000;
-var mailgunApiKey = process.env.MAILGUN_API_KEY || 'key-9f0dfe832e41409b2429bc9d7b8ca010';
-var mailgunDomain = 'sandboxd64a407772214f2dbc95a657db441b44.mailgun.org';
+var mailgunApiKey = process.env.MAILGUN_API_KEY;
+var mailgunDomain = 'rikitraki.com';
 var mailgunFrom = 'rikitraki@gmail.com';
 var mailgun = require('mailgun-js')({apiKey: mailgunApiKey, domain: mailgunDomain});
 var mailcomposer = require('mailcomposer');
@@ -49,7 +49,7 @@ module.exports = function (router, db) {
 					  text: 'This message is being sent at your request to reset your RikiTraki password.',
 					  html: 'Follow <a href="' + 
 					  		req.query.rturl + 
-					  		'/resetp.html?' + 'username=' + 
+					  		'resetp.html?' + 'username=' + 
 					  		item.username + 
 					  		'&token=' + 
 					  		token + 

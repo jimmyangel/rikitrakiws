@@ -37,6 +37,7 @@
     "passport-http": "^0.3.0",
     "passport-jwt": "^1.1.0",
     "sanitize-html": "^1.11.1",
+    "serve-favicon": "^2.3.0",
     "shortid": "^2.2.2"
   },
   "devDependencies": {},

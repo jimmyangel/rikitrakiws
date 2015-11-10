@@ -1,13 +1,17 @@
 var log4js = require('log4js');
 var logger = log4js.getLogger();
 var express = require('express');
+var favicon = require('serve-favicon');
 var bodyParser = require('body-parser');
-var app = express();
 var port = process.env.OPENSHIFT_NODEJS_PORT || 3000;
 var ipaddress = process.env.OPENSHIFT_NODEJS_IP;
 var loglevel = process.env.LOGLEVEL || 'DEBUG';
 
+var app = express();
+app.use(favicon(__dirname + '/public/favicon.ico'));
+
 logger.setLevel(loglevel);
+app.use(express.static('public'));
 
 app.use(log4js.connectLogger(log4js.getLogger('http'), { level: 'auto' }));
 app.use(bodyParser.json({limit: '5mb'}));
