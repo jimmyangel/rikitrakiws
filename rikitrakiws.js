@@ -20,6 +20,11 @@ app.use(bodyParser.raw({limit: '10mb', type: 'image/jpeg'}));
 
 app.use('/api/', require('./routes/').router);
 
+app.use(function (req, res, next) {
+	res.removeHeader("WWW-Authenticate");
+	next();
+});
+
 /* app.use(function(error, req, res, next) {
 	if (error) {
 		logger.error('InvalidInput', error.message);
