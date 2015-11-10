@@ -46,7 +46,7 @@ var tmMap = {
 							// scene3DOnly: true, 
 							baseLayerPicker: false,
 							imageryProvider: new Cesium.ArcGisMapServerImageryProvider({
-								url: 'http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer',
+								url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer',
 								enablePickFeatures: false
 							}),
 							animation: false,
@@ -623,7 +623,7 @@ var tmMap = {
 							// scene3DOnly: true, 
 							baseLayerPicker: false,
 							imageryProvider: new Cesium.ArcGisMapServerImageryProvider({
-								url: 'http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer',
+								url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer',
 								enablePickFeatures: false
 							}),
 							animation: false,
@@ -642,7 +642,7 @@ var tmMap = {
 
 
 		var terrainProvider = new Cesium.CesiumTerrainProvider({
-			url : 'http://assets.agi.com/stk-terrain/world',
+			url : 'https://assets.agi.com/stk-terrain/world',
 			requestWaterMask : false,
 			requestVertexNormals : true
 		}); 
