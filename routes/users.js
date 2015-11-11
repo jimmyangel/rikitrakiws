@@ -135,8 +135,8 @@ module.exports = function (router, db) {
 		var v = validator(schemas.userRegistrationSchema);
 		if (v(req.body)) {
 			db.collection('invitations', function (err, collection) {
-				collection.findOne({'invitationCode' : req.body.invitationCode}, function (err, item) {
-					if ((!item) || (item.email != req.body.email)) {
+				collection.findOne({$and: [{'invitationCode' : req.body.invitationCode}, {email: req.body.email}]}, function (err, item) {
+					if ((!item) || (item.email !== req.body.email)) {
 						res.status(404).send({error: 'MissingInvitation', description: 'Only invited users can register'});
 					} else {
 						req.body.password = bcrypt.hashSync(req.body.password, 8);
