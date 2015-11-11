@@ -1,4 +1,6 @@
 // API router for track resources
+var MAX_TRACKS = 500;
+var MAX_MOTD = 5;
 var passport = require('passport');
 
 var log4js = require('log4js');
@@ -65,7 +67,7 @@ module.exports = function (router, db) {
 					} 
 				}
 			}
-			collection.find(query, {limit: 1000, fields: p}, function(err, stream) {
+			collection.find(query, {limit: MAX_TRACKS, sort: {createdDate: -1}, fields: p}, function(err, stream) {
 				var result = {};
 				result.tracks = {};
 				stream.on('data', function(data) {
@@ -239,15 +241,19 @@ module.exports = function (router, db) {
 		});
 	}); 
 
-	// Get motd
+	// Get motd (MAX_MOTD most recently created tracks)	
 	router.get('/v1/motd', function(req, res) {
 		logger.info('get motd');
-		var trackId = req.params.trackId;
-		db.collection('motd', function (err, collection) {
-			collection.findOne({}, {_id: false}, function (err, item) {
-				if (item) {
-					var result = {};
-					result.motd = item;
+		db.collection('tracks', function (err, collection) {
+			collection.find({'hasPhotos' : true}, {limit: MAX_MOTD, sort: {createdDate: -1}, fields: {_id: false, trackId: true}}).toArray(function(err, items) {
+				if (items) {
+					var motd = [];
+					for (var i=0; i<items.length; i++) {
+						var tuple = [items[i].trackId, 0];
+						motd.push(tuple);
+					}
+					var result = {motd: {motdTracks: {}}};
+					result.motd.motdTracks = motd;
 					res.send(result);
 				} else { 
 					logger.warn('motd not found');
@@ -256,7 +262,6 @@ module.exports = function (router, db) {
 			});
 		});
 	}); 
-
 
 	// Get the geotags structure for a single track
 	// This getter is here for compatibility with static version of rikitraki
