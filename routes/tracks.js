@@ -17,11 +17,75 @@ module.exports = function (router, db) {
 
 	var isValidToken = passport.authenticate('jwt', { session : false });
 
+	function buildTracksQuery (queryparms) {
+		var query = {};
+
+		// TODO: include latlng query inside of filter
+		if (queryparms.latlng) {
+			var latlng = queryparms.latlng.split(',');
+			var lnglat = [];
+			var distance = 0;
+			if (latlng.length === 2) {
+				lnglat[1] = parseFloat(latlng[0]);
+				lnglat[0] = parseFloat(latlng[1]);
+				if ((lnglat[0] < 180) && (lnglat[0] > -180) && (lnglat[1] < 90) && (lnglat[1] > -90)) {
+					if (queryparms.distance) {
+						var distance = parseInt(queryparms.distance);
+						distance = distance ? distance : 0;
+					}
+					query = {trackGeoJson: {$near: {$geometry: {type: "Point", coordinates: lnglat}, '$maxDistance': distance}}}
+					logger.info('query', query);	
+				} 
+			}
+		}
+
+		if (queryparms.filter) {
+			var filter = JSON.parse(queryparms.filter);
+			if (filter.username) {
+				query.username = filter.username;
+			}
+			if (filter.trackFav) {
+				query.trackFav = true;
+			}
+			if (filter.level) {
+				var levels = filter.level.split(',');
+				query.$and = [{$or: [] }];
+				for (var i=0; i<levels.length; i++) {
+					query.$and[0].$or.push({trackLevel: levels[i]});
+				}
+			}
+			if (filter.activity) {
+				var activities = filter.activity.split(',');
+				var j = 0;
+				if (!query.$and) {
+					query.$and = [{$or: [] }];
+				} else {
+					j = 1;
+					query.$and.push({$or: [] })
+				}
+				for (var i=0; i<activities.length; i++) {
+					if (activities[i] === 'Hiking') {
+						query.$and[j].$or.push({trackType: { $exists: false }})
+					}
+					query.$and[j].$or.push({trackType: activities[i]});
+				}
+			}
+			if (filter.country) {
+				query.trackRegionTags = {$in: [filter.country]};
+			}
+			if (filter.region) {
+				query.trackRegionTags = {$in: [filter.region]};
+			}
+		} 
+		logger.info('query', query);
+		return query;
+	}
+
 	// Get all tracks
 	router.get('/v1/tracks', function(req, res) {
 		logger.info('get tracks...');
 		db.collection('tracks', function (err, collection) {
-			logger.info(req.query);
+
 			var p;
 			if (req.query.proj === 'small') {
 				p = {_id: false,
@@ -49,24 +113,9 @@ module.exports = function (router, db) {
 					 	username: true,
 					 	isDraft: true}				
 			}
-			var query = {};
-			if (req.query.latlng) {
-				var latlng = req.query.latlng.split(',');
-				var lnglat = [];
-				var distance = 0;
-				if (latlng.length === 2) {
-					lnglat[1] = parseFloat(latlng[0]);
-					lnglat[0] = parseFloat(latlng[1]);
-					if ((lnglat[0] < 180) && (lnglat[0] > -180) && (lnglat[1] < 90) && (lnglat[1] > -90)) {
-						if (req.query.distance) {
-							var distance = parseInt(req.query.distance);
-							distance = distance ? distance : 0;
-						}
-						query = {trackGeoJson: {$near: {$geometry: {type: "Point", coordinates: lnglat}, '$maxDistance': distance}}}
-						logger.info('query', query);	
-					} 
-				}
-			}
+
+			var query = buildTracksQuery(req.query);
+
 			collection.find(query, {limit: MAX_TRACKS, sort: {createdDate: -1}, fields: p}, function(err, stream) {
 				var result = {};
 				result.tracks = {};
@@ -75,13 +124,31 @@ module.exports = function (router, db) {
 				});
 				stream.on('end', function () {
 					if (Object.keys(result.tracks).length === 0) {
-						res.status(404).send({error: 'NotFound', description: 'query returned no data'});
+						// res.status(404).send({error: 'NotFound', description: 'query returned no data'});
+						// res.status(204).send();
+						res.status(204).send({tracks: {}});
 					} else {
 						res.send(result);
 					}
 				});
 			});
 		}); 
+	});
+
+	router.get('/v1/tracks/number', function(req, res) {
+		logger.info('get number of tracks...');
+		db.collection('tracks', function (err, collection) {
+			var query = buildTracksQuery(req.query);
+			collection.find(query).count(function(err, count) {
+				logger.info('number of tracks is...', count);
+				if (err) {
+					logger.error('database error', err.message);
+					res.status(507).send({error: 'DatabaseQueryError', description: err.message});
+				} else {
+					res.send({numberOfTracks: count});
+				}
+			});
+		});
 	});
 
 	// Create a new track (must have valid token to succeed)
@@ -245,11 +312,11 @@ module.exports = function (router, db) {
 	router.get('/v1/motd', function(req, res) {
 		logger.info('get motd');
 		db.collection('tracks', function (err, collection) {
-			collection.find({'hasPhotos' : true}, {limit: MAX_MOTD, sort: {createdDate: -1}, fields: {_id: false, trackId: true}}).toArray(function(err, items) {
+			collection.find({'hasPhotos' : true}, {limit: MAX_MOTD, sort: {createdDate: -1}, fields: {_id: false, trackId: true, trackName: true}}).toArray(function(err, items) {
 				if (items) {
 					var motd = [];
 					for (var i=0; i<items.length; i++) {
-						var tuple = [items[i].trackId, 0];
+						var tuple = [items[i].trackId, 0, items[i].trackName]; // TrackId, thumbnail index, trackName
 						motd.push(tuple);
 					}
 					var result = {motd: {motdTracks: {}}};

@@ -153,3 +153,11 @@ body {
 .cesium-credit-image img{
     height: 18px;
 }
+
+.filter-active {
+    color: #FFA500;
+}
+
+.filter-active:hover {
+    color: #FFFFFF;
+}
