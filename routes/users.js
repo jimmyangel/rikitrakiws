@@ -5,6 +5,7 @@ var JWT_SECRET = require('./index').JWT_SECRET;
 var JWT_ISSUER = 'rikitraki.com';
 
 var MAX_INVITATIONS = 1000;
+var TEMP_INVITATION_EMAIL = process.env.TEMP_INVITATION_EMAIL || 'rikitraki@gmail.com';
 var mailgunApiKey = process.env.MAILGUN_API_KEY;
 var mailgunDomain = 'rikitraki.com';
 var mailgunFrom = 'rikitraki@gmail.com';
@@ -54,7 +55,7 @@ module.exports = function (router, db) {
 					var token = jwt.sign({iss: JWT_ISSUER, sub:  item.username, exp: (Math.floor(Date.now() / 1000) + 86400), aud: 'passwordreset'}, JWT_SECRET);
 					var mail = mailcomposer({
 					  from: 'noreply@rikitraki.com',
-					  to: 'morinricardo@gmail.com',
+					  to: req.query.email,
 					  subject: 'RikiTraki password reset',
 					  text: 'This message is being sent at your request to reset your RikiTraki password.',
 					  html: 'Follow <a href="' + 
@@ -106,7 +107,11 @@ module.exports = function (router, db) {
 									res.status(507).send({error: 'DatabaseInsertError', description: err.message});		
 								}	
 							} else {
-								var mailgunData = {from: mailgunFrom, to: req.body.email, subject: 'RikiTraki Invitation Code', text: 'Your RikiTraki invitation code is ' + req.body.invitationCode};
+								// var mailgunData = {from: mailgunFrom, to: req.body.email, subject: 'RikiTraki Invitation Code', text: 'Your RikiTraki invitation code is ' + req.body.invitationCode};
+								var mailgunData = {from: mailgunFrom, 
+													to: TEMP_INVITATION_EMAIL, 
+													subject: 'RikiTraki Invitation Code', 
+													text: req.body.email + ', your RikiTraki invitation code is ' + req.body.invitationCode};
 								mailgun.messages().send(mailgunData, function (error, body) {
 									if (error) {
 										logger.error('mailgun error', error);
