@@ -12,8 +12,8 @@ var app = express();
 // Enforce https redirect if appropriate
 app.enable('trust proxy');
 app.use(function (req, res, next) {
-	// Redirect to https only if we are in the rikitraki domain
-	if (/rikitraki.com/i.test(req.headers.host)) {
+	// Redirect to https only if the app is deployed
+	if (/rikitraki/i.test(req.headers.host)) {
 		if (req.secure) {
 			next();
 		} else {
