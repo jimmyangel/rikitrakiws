@@ -4,7 +4,7 @@ var jwt = require('jsonwebtoken');
 var JWT_SECRET = require('./index').JWT_SECRET;
 var JWT_ISSUER = 'rikitraki.com';
 
-var MAX_INVITATIONS = 1000;
+var MAX_INVITATIONS = 100;
 var TEMP_INVITATION_EMAIL = process.env.TEMP_INVITATION_EMAIL || 'rikitraki@gmail.com';
 var mailgunApiKey = process.env.MAILGUN_API_KEY;
 var mailgunDomain = 'rikitraki.com';
@@ -124,7 +124,7 @@ module.exports = function (router, db) {
 						}); 
 					} else {
 						logger.error('exceeded invitation count');
-						res.status(429).send({error: 'TooManyRequests', description: 'No invitations available'});								
+						res.status(429).send({error: 'TooManyRequests', description: 'No more invitations are available at the moment'});								
 					}
 				});
 			});
