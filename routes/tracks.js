@@ -228,8 +228,12 @@ module.exports = function (router, db) {
 		var trackId = req.params.trackId;
 
 		// Sanitize text fields
-		req.body.trackName = utils.sanitize(req.body.trackName, true);
-		req.body.trackDescription = utils.sanitize(req.body.trackDescription);
+		if (req.body.trackName) {
+			req.body.trackName = utils.sanitize(req.body.trackName, true);
+		}
+		if (req.body.trackDescription) {
+			req.body.trackDescription = utils.sanitize(req.body.trackDescription);
+		}
 		if (req.body.trackRegionTags) {
 			for (var i=0; i<req.body.trackRegionTags.length; i++) {
 				req.body.trackRegionTags[i] = utils.sanitize(req.body.trackRegionTags[i], true);
