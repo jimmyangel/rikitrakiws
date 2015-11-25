@@ -44,7 +44,7 @@ module.exports = function (router, db) {
 		if (queryparms.filter) {
 			var filter = JSON.parse(queryparms.filter);
 			if (filter.username) {
-				query.username = filter.username;
+				query.username = {$regex : new RegExp('^' + filter.username)}; // Begins with
 			}
 			if (filter.trackFav) {
 				query.trackFav = true;
