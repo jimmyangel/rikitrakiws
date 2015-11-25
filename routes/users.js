@@ -1,3 +1,5 @@
+'use strict';
+
 // API router for user resources
 var passport = require('passport');
 var jwt = require('jsonwebtoken');
@@ -29,7 +31,7 @@ module.exports = function (router, db) {
 	var isValidToken = passport.authenticate('jwt', { session : false });
 
 	router.get('/v1/token', function(req, res, next) {
-		passport.authenticate('basic', { session : false }, function (err, user, info) {
+		passport.authenticate('basic', { session : false }, function (err, user) {
 			if(err) {
 				logger.error('authentication error', err);
 				return;
@@ -188,7 +190,7 @@ module.exports = function (router, db) {
 
 	// Update user profile per user credentials
 	router.put('/v1/users/me', function(req, res, next) {
-		passport.authenticate('basic', { session : false }, function (err, user, info) {
+		passport.authenticate('basic', { session : false }, function (err, user) {
 			console.log('authenticating ', user);
 			if(err) {
 				logger.error('authentication error', err);
@@ -219,7 +221,7 @@ module.exports = function (router, db) {
 				} else {
 					db.collection('users', function (err, collection) {
 						updData.lastUpdatedDate = new Date();
-						collection.updateOne({'username' : username}, {$set: updData}, {w: 1}, function (err, item) {
+						collection.updateOne({'username' : username}, {$set: updData}, {w: 1}, function (err) {
 							if (err) {
 								if (err.code === 11000) {
 									res.status(422).send({error: 'Duplicate', description: 'Email already exists'});			
@@ -249,7 +251,7 @@ module.exports = function (router, db) {
 			req.body.password = bcrypt.hashSync(req.body.password, 8);
 			req.body.lastUpdatedDate = new Date();
 			db.collection('users', function (err, collection) {
-				collection.updateOne({'username' : req.user}, {$set: req.body}, {w: 1}, function (err, item) {
+				collection.updateOne({'username' : req.user}, {$set: req.body}, {w: 1}, function (err) {
 					if (err) {
 						logger.error('database error', err.code);
 						res.status(507).send({error: 'DatabaseUpdateError', description: err.message});		
@@ -263,4 +265,4 @@ module.exports = function (router, db) {
 			res.status(400).send({error: 'InvalidInput', description: v.errors});	
 		}
 	});
-}
+};

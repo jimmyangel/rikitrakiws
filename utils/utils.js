@@ -1,3 +1,5 @@
+'use strict';
+
 var sanitizeHtml = require('sanitize-html');
 
 module.exports =  {
@@ -7,4 +9,4 @@ module.exports =  {
 			return clean;
 		}
 	}
-}
+};

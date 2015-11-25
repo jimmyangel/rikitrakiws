@@ -1,3 +1,5 @@
+'use strict';
+
 // API router for track resources
 var MAX_TRACKS = 500;
 var MAX_MOTD = 5;
@@ -30,10 +32,10 @@ module.exports = function (router, db) {
 				lnglat[0] = parseFloat(latlng[1]);
 				if ((lnglat[0] < 180) && (lnglat[0] > -180) && (lnglat[1] < 90) && (lnglat[1] > -90)) {
 					if (queryparms.distance) {
-						var distance = parseInt(queryparms.distance);
+						distance = parseInt(queryparms.distance);
 						distance = distance ? distance : 0;
 					}
-					query = {trackGeoJson: {$near: {$geometry: {type: "Point", coordinates: lnglat}, '$maxDistance': distance}}}
+					query = {trackGeoJson: {$near: {$geometry: {type: 'Point', coordinates: lnglat}, '$maxDistance': distance}}};
 					logger.info('query', query);	
 				} 
 			}
@@ -47,10 +49,11 @@ module.exports = function (router, db) {
 			if (filter.trackFav) {
 				query.trackFav = true;
 			}
+			var i = 0;
 			if (filter.level) {
 				var levels = filter.level.split(',');
 				query.$and = [{$or: [] }];
-				for (var i=0; i<levels.length; i++) {
+				for (i=0; i<levels.length; i++) {
 					query.$and[0].$or.push({trackLevel: levels[i]});
 				}
 			}
@@ -61,11 +64,11 @@ module.exports = function (router, db) {
 					query.$and = [{$or: [] }];
 				} else {
 					j = 1;
-					query.$and.push({$or: [] })
+					query.$and.push({$or: [] });
 				}
-				for (var i=0; i<activities.length; i++) {
+				for (i=0; i<activities.length; i++) {
 					if (activities[i] === 'Hiking') {
-						query.$and[j].$or.push({trackType: { $exists: false }})
+						query.$and[j].$or.push({trackType: { $exists: false }});
 					}
 					query.$and[j].$or.push({trackType: activities[i]});
 				}
@@ -97,7 +100,7 @@ module.exports = function (router, db) {
 					 	trackFav: true,
 					 	trackName: true,
 					 	username: true,
-					 	isDraft: true}
+					 	isDraft: true};
 			} else {
 				p = {_id: false,
 						trackId: true,
@@ -111,7 +114,7 @@ module.exports = function (router, db) {
 					 	trackDescription: true,
 					 	hasPhotos: true,
 					 	username: true,
-					 	isDraft: true}				
+					 	isDraft: true};			
 			}
 
 			var query = buildTracksQuery(req.query);
@@ -167,9 +170,10 @@ module.exports = function (router, db) {
 			req.body.trackGeoJson = {type: 'Point', coordinates: [req.body.trackLatLng[1], req.body.trackLatLng[0]]};
 			// logger.info('track photos data ', req.body.trackPhotos);
 			// If we have pictures, go ahead and generate binary field from dataurl for every thumbnail
+			var i = 0;
 			if (req.body.trackPhotos) {
-				for (var i=0; i<req.body.trackPhotos.length; i++) {
-					var buffer = new Buffer(req.body.trackPhotos[i].picThumbDataUrl.split(",")[1], 'base64');
+				for (i=0; i<req.body.trackPhotos.length; i++) {
+					var buffer = new Buffer(req.body.trackPhotos[i].picThumbDataUrl.split(',')[1], 'base64');
 					var bField = new mongo.Binary(buffer);
 					req.body.trackPhotos[i].picThumbBlob = bField;
 					delete req.body.trackPhotos[i].picThumbDataUrl;
@@ -179,7 +183,7 @@ module.exports = function (router, db) {
 			// Sanitize text fields
 			req.body.trackName = utils.sanitize(req.body.trackName, true);
 			req.body.trackDescription = utils.sanitize(req.body.trackDescription);
-			for (var i=0; i<req.body.trackRegionTags.length; i++) {
+			for (i=0; i<req.body.trackRegionTags.length; i++) {
 				req.body.trackRegionTags[i] = utils.sanitize(req.body.trackRegionTags[i], true);
 			}
 
@@ -245,7 +249,7 @@ module.exports = function (router, db) {
 		db.collection('tracks', function (err, collection) {
 			collection.findOne({$and: [{'trackId' : trackId}, {'username' : req.user}]}, {_id: false, trackId: true}, function (err, item) {
 				if (item) {
-					collection.updateOne({'trackId' : trackId}, {$set: req.body}, {w: 1}, function (err, uItem) {
+					collection.updateOne({'trackId' : trackId}, {$set: req.body}, {w: 1}, function (err) {
 						if (err) {
 							logger.error('database error', err.code);
 							res.status(507).send({error: 'DatabaseUpdateError', description: err.message});		
@@ -364,7 +368,7 @@ module.exports = function (router, db) {
 			collection.findOne({'trackId' : trackId}, function (err, item) {
 				if (item) {
 					// Build the response 
-					res.setHeader("Content-Type", "application/gpx+xml");
+					res.setHeader('Content-Type', 'application/gpx+xml');
 					res.send(item.trackGPXBlob);
 				} else { 
 					logger.warn('not found');
@@ -391,7 +395,7 @@ module.exports = function (router, db) {
 							res.status(404).send({error: 'NotFound', description: 'thumbnail not found'});
 						} else {
 							// Build the response 
-							res.setHeader("Content-Type", "image/jpeg");
+							res.setHeader('Content-Type', 'image/jpeg');
 							res.send(item.trackPhotos[picIndex].picThumbBlob.buffer);
 						}
 					} else { 
@@ -416,7 +420,7 @@ module.exports = function (router, db) {
 				collection.findOne({'trackId' : trackId, 'picIndex' : picIndex}, function (err, item) {
 					if (item) {
 						// Build the response 
-						res.setHeader("Content-Type", "image/jpeg");
+						res.setHeader('Content-Type', 'image/jpeg');
 						res.send(item.picBlob.buffer);
 					} else { 
 						logger.warn('not found');
@@ -425,6 +429,5 @@ module.exports = function (router, db) {
 				});
 			});
 		}
-	}); 
-
-}
+	});
+};

@@ -97,6 +97,6 @@ var schemas = {
 		},
 		additionalProperties: false		
 	}
-}
+};
 
 module.exports.schemas = schemas;
