@@ -231,38 +231,54 @@ module.exports = function (router, db) {
 		logger.info('update track info for: ' + req.params.trackId);
 		var trackId = req.params.trackId;
 
-		// Sanitize text fields
-		if (req.body.trackName) {
-			req.body.trackName = utils.sanitize(req.body.trackName, true);
-		}
-		if (req.body.trackDescription) {
-			req.body.trackDescription = utils.sanitize(req.body.trackDescription);
-		}
-		if (req.body.trackRegionTags) {
-			for (var i=0; i<req.body.trackRegionTags.length; i++) {
-				req.body.trackRegionTags[i] = utils.sanitize(req.body.trackRegionTags[i], true);
-			}
-		}
 
-		req.body.lastUpdatedDate = new Date();
+		var v = validator(schemas.trackEditSchema);
 
-		db.collection('tracks', function (err, collection) {
-			collection.findOne({$and: [{'trackId' : trackId}, {'username' : req.user}]}, {_id: false, trackId: true}, function (err, item) {
-				if (item) {
-					collection.updateOne({'trackId' : trackId}, {$set: req.body}, {w: 1}, function (err) {
-						if (err) {
-							logger.error('database error', err.code);
-							res.status(507).send({error: 'DatabaseUpdateError', description: err.message});		
-						} else {
-							res.status(200).send(item);
-						}
-					});
-				} else { 
-					logger.warn('not found');
-					res.status(403).send({error: 'Forbidden', description: 'track does not belong to requesting user'});
+		if (v(req.body)) {
+			// If we have pictures, go ahead and generate binary field from dataurl for every thumbnail
+			var i = 0;
+			if (req.body.trackPhotos) {
+				for (i=0; i<req.body.trackPhotos.length; i++) {
+					var buffer = new Buffer(req.body.trackPhotos[i].picThumbDataUrl.split(',')[1], 'base64');
+					var bField = new mongo.Binary(buffer);
+					req.body.trackPhotos[i].picThumbBlob = bField;
+					delete req.body.trackPhotos[i].picThumbDataUrl;
 				}
+			}
+			// Sanitize text fields
+			if (req.body.trackName) {
+				req.body.trackName = utils.sanitize(req.body.trackName, true);
+			}
+			if (req.body.trackDescription) {
+				req.body.trackDescription = utils.sanitize(req.body.trackDescription);
+			}
+			if (req.body.trackRegionTags) {
+				for (var i=0; i<req.body.trackRegionTags.length; i++) {
+					req.body.trackRegionTags[i] = utils.sanitize(req.body.trackRegionTags[i], true);
+				}
+			}
+			req.body.lastUpdatedDate = new Date();
+			db.collection('tracks', function (err, collection) {
+				collection.findOne({$and: [{'trackId' : trackId}, {'username' : req.user}]}, {_id: false, trackId: true}, function (err, item) {
+					if (item) {
+						collection.updateOne({'trackId' : trackId}, {$set: req.body}, {w: 1}, function (err) {
+							if (err) {
+								logger.error('database error', err.code);
+								res.status(507).send({error: 'DatabaseUpdateError', description: err.message});		
+							} else {
+								res.status(200).send(item);
+							}
+						});
+					} else { 
+						logger.warn('not found');
+						res.status(403).send({error: 'Forbidden', description: 'track does not belong to requesting user'});
+					}
+				});
 			});
-		});
+		} else {
+			logger.error('validator ', v.errors);
+			res.status(400).send({error: 'InvalidInput','description': v.errors});			
+		}
 	}); 
 
 	// Delete track (must have valid token to succeed)
@@ -430,4 +446,36 @@ module.exports = function (router, db) {
 			});
 		}
 	});
+
+	// Delete single picture for a track (must have valid token to succeed)
+	router.delete('/v1/tracks/:trackId/picture/:picIndex', isValidToken, function(req, res) {
+		logger.info('delete track picture: ' + req.params.trackId + ' ' + req.params.picIndex);
+		var trackId = req.params.trackId;
+		var picIndex = parseInt(req.params.picIndex);
+		if (isNaN(picIndex)) {
+			logger.warn('invalid picture index');
+			res.status(404).send({error: 'NotFound', description: 'invalid picture index'});
+		} else {
+			db.collection('tracks', function (err, tracksCollection) {
+				tracksCollection.findOne({$and: [{'trackId' : trackId}, {'username' : req.user}]}, {_id: false, trackId: true}, function (err, item) {
+					if (item) {
+						db.collection('pictures', function (err, picturesCollection) {
+							picturesCollection.remove({'trackId' : trackId, 'picIndex' : picIndex}, {w: 1}, function (err) {
+								if (err) {
+									logger.error('database error', err.code);
+									res.status(507).send({error: 'DatabasePicRemoveError', description: err.message});		
+								} else {
+									logger.info('deleted picture ' + picIndex +' for track: ' + trackId);
+									res.status(204).send();
+								}
+							});
+						});	
+					} else { 
+						logger.warn('not found');
+						res.status(403).send({error: 'Forbidden', description: 'track does not belong to requesting user'});
+					}
+				});
+			});
+		}
+	}); 
 };
