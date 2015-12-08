@@ -61,6 +61,7 @@ var schemas = {
 			trackFav: {type: 'boolean'},
 			trackName: {type: 'string', maxLength: 200},
 			trackDescription: {type: 'string', maxLength: 5000},
+			hasPhotos: {type: 'boolean'},
 			trackPhotos: {
 				type: 'array',
 				items: {
