@@ -46,11 +46,11 @@ mongoClient.connect(MONGO_URL, function(err, db) {
 					if (user) {
 						if (bcrypt.compareSync(password, user.password)) {
 						//if (user.password === password) {
-							return callback(null, username);
+							return callback(null, user);
 						} else {
 							return callback(null, false);
 						}
-					} else { 
+					} else {
 						return callback(null, false);
 					}
 				});
@@ -61,14 +61,14 @@ mongoClient.connect(MONGO_URL, function(err, db) {
 	// Setup JWT token authentication middleware
 	var opts = {};
 	opts.secretOrKey = JWT_SECRET;
-	passport.use(new JwtStrategy(opts, 
+	passport.use(new JwtStrategy(opts,
 		function(jwtPayload, callback) {
 			callback(null, jwtPayload.sub, jwtPayload);
 		}
 	));
 
 	// List of api resources below
-	require('./users')(router, db); 
+	require('./users')(router, db);
 	require('./tracks')(router, db);
 
 });

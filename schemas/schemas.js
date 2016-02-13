@@ -93,10 +93,10 @@ var schemas = {
 			username: {type: 'string', pattern: '^[^~,;%\\`\'\"<>{}()\\[\\]/]*$', minLength: 6, maxLength: 40},
 			email: {type: 'string', format: 'email'},
 			password: {type: 'string', pattern: '^[^~,;%\\`\'\"<>{}()\\[\\]/]*$', minLength: 6, maxLength: 18},
-			invitationCode: {type: 'string', minLength:4, maxLength:20}
+			rturl: {type: 'string', format: 'uri'}
 		},
 		additionalProperties: false,
-		required: ['username', 'email', 'password', 'invitationCode']
+		required: ['username', 'email', 'password']
 	},
 	userProfileUpdateSchema: {
 		type: 'object',
@@ -105,7 +105,7 @@ var schemas = {
 			password: {type: 'string', pattern: '^[^~,;%\\`\'\"<>{}()\\[\\]/]*$', minLength: 6, maxLength: 18}
 		},
 		additionalProperties: false
-	},	
+	},
 	resetPasswordSchema: {
 		type: 'object',
 		properties: {
@@ -119,7 +119,7 @@ var schemas = {
 		properties: {
 			email: {type: 'string', format: 'email'}
 		},
-		additionalProperties: false		
+		additionalProperties: false
 	}
 };
 
