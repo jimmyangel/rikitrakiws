@@ -176,7 +176,7 @@ module.exports = function (router, db) {
 	// Update user profile per user credentials
 	router.put('/v1/users/me', function(req, res, next) {
 		passport.authenticate('basic', { session : false }, function (err, user) {
-			logger.info('authenticating user:', user);
+			logger.info('authenticating user:', user.username);
 			if(err) {
 				logger.error('authentication error', err);
 				return;
@@ -186,7 +186,7 @@ module.exports = function (router, db) {
 			    res.send(401);
 			    return;
 			}
-			var username = user;
+			var username = user.username;
 			logger.info('update user profile for: ', username);
 			var v = validator(schemas.userProfileUpdateSchema);
 			if (v(req.body)) {
