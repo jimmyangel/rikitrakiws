@@ -15,7 +15,7 @@ var schemas = {
 				maxItems: 5
 			},
 			trackLevel: {enum: ['Easy', 'Moderate', 'Difficult']},
-			trackType: {enum: ['Hiking', 'Biking', 'Boating', 'Offroad', 'Motorcycling', 'Flying', 'Skiing', 'Snowshoeing']},
+			trackType: {enum: ['Hiking', 'Biking', 'Boating', 'Offroad', 'Motorcycling', 'Flying', 'Skiing', 'Snowshoeing', 'Getting There']},
 			trackFav: {type: 'boolean'},
 			trackGPX: {type: 'string'},
 			trackName: {type: 'string', maxLength: 200},
@@ -57,7 +57,7 @@ var schemas = {
 				maxItems: 5
 			},
 			trackLevel: {enum: ['Easy', 'Moderate', 'Difficult']},
-			trackType: {enum: ['Hiking', 'Biking', 'Boating', 'Offroad', 'Motorcycling', 'Flying', 'Skiing', 'Snowshoeing']},
+			trackType: {enum: ['Hiking', 'Biking', 'Boating', 'Offroad', 'Motorcycling', 'Flying', 'Skiing', 'Snowshoeing', 'Getting There']},
 			trackFav: {type: 'boolean'},
 			trackName: {type: 'string', maxLength: 200},
 			trackDescription: {type: 'string', maxLength: 5000},
