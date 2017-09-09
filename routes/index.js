@@ -7,7 +7,7 @@ var express = require('express');
 var router = express.Router();
 var mongo = require('mongodb');
 var mongoClient = mongo.MongoClient;
-var MONGO_URL = process.env.OPENSHIFT_MONGODB_DB_URL ? (process.env.OPENSHIFT_MONGODB_DB_URL + 'prod') : 'mongodb://127.0.0.1/rikitraki';
+var MONGO_URL = process.env.MONGODB_DB_URL ? (process.env.MONGODB_DB_URL) : 'mongodb://127.0.0.1/rikitraki';
 var JWT_SECRET = process.env.JWT_SECRET || 'eventually instead of this we will use a public key';
 
 var passport = require('passport');
