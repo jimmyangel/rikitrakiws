@@ -26,10 +26,10 @@ app.use(function (req, res, next) {
 	}
 });
 
-app.use(favicon(__dirname + '/public/favicon.ico'));
+// app.use(favicon(__dirname + '/public/favicon.ico'));
 
 logger.setLevel(loglevel);
-app.use(express.static('public'));
+// app.use(express.static('public'));
 
 app.use(log4js.connectLogger(log4js.getLogger('http'), { level: 'auto' }));
 app.use(bodyParser.json({limit: '5mb'}));

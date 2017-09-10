@@ -23,6 +23,9 @@
     "node": ">= 0.6.0",
     "npm": ">= 1.0.0"
   },
+  "scripts": {
+    "start": "node rikitrakiws.js"
+  },
   "dependencies": {
     "bcryptjs": "^2.2.1",
     "body-parser": "^1.13.3",
