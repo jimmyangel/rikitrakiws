@@ -12,7 +12,7 @@ var loglevel = process.env.LOGLEVEL || 'DEBUG';
 var app = express();
 
 // Enforce https redirect if appropriate
-app.enable('trust proxy');
+/*app.enable('trust proxy');
 app.use(function (req, res, next) {
 	// Redirect to https only if the app is deployed
 	if (/rikitraki/i.test(req.headers.host)) {
@@ -24,7 +24,7 @@ app.use(function (req, res, next) {
 	} else {
 		next();
 	}
-});
+});*/
 
 // app.use(favicon(__dirname + '/public/favicon.ico'));
 
