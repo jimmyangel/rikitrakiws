@@ -1,8 +1,32 @@
 # RikiTrakiWS
 
-This repository contains the code for the web services supporting RikiTraki, a hiking log web application: [RikiTraki.com](https://www.rikitraki.com). Web Services and database are hosted in Google Cloud Platform. The data is maintained on a MongoDB database to which this project provides a CRUD interface using REST web services.
+This repository contains the code for the web services supporting RikiTraki, a outdoor activities log web application: [RikiTraki.com](https://www.rikitraki.com). The public Web Services and database are hosted in Google Cloud Platform. The data is maintained on a MongoDB database to which this project provides a CRUD interface using REST web services.
 
-**API:**
+## Self Hosting
+
+If you want to host your own Web Services layer:
+
+* Install and run [MongoDB](https://www.mongodb.com/)
+
+* Unzip ```rikitraki_dump.zip``` (located in emptydb directory of this repo) in some working directory
+
+* Run ```mongorestore dump``` (MongoDB must be up and running) which will create the rikitraki database with the required collections and index definitions
+
+* Run ```node rikitrakiws.js```, ensuring that the following environment variables are set prior:
+
+ * ```MONGODB_DB_URL```, for example, ```export MONGODB_DB_URL=mongodb://localhost:27017/rikitraki```
+
+ * ```MAILGUN_API_KEY```, for example, ```MAILGUN_API_KEY=key-thisismymailgunapikey``` -- this is required to be able to add users that can upload tracks to the database
+
+  * ```JWT_SECRET```, the service needs to sign authentication tokens; this should be a long random password, for example ```export JWT_SECRET=thisisaverylongrandompasswordforsigningjwttokens```
+
+* The script ```start.sh``` is an example of a start script that grabs secrets from the Google Cloud Platform metadata storage and sets the environment variable above
+
+* Make sure your rikitraki client is configured to point to your running web service (file js/config.js, getApiBaseUrl entry); for example: ```http://localhost:3000/api```
+
+* Create a new user using the rikitraki application and start adding tracks
+
+## API:
 
 URL Format: `{service-url}/api/{version}/{resource}`, e.g., : `https://www.rikitraki.com/api/v1/tracks/'`
 
