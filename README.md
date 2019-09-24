@@ -26,6 +26,8 @@ If you want to host your own Web Services layer:
 
 * Create a new user using the rikitraki application and start adding tracks
 
+Note: the above has been tested with MongoDB v3.6.3 and node v12.10.0
+
 ## API:
 
 URL Format: `{service-url}/api/{version}/{resource}`, e.g., : `https://www.rikitraki.com/api/v1/tracks/'`
