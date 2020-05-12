@@ -47,8 +47,8 @@ SSL is required on all authenticated/authorized calls.
 |`/users/me`|PUT|Updates user profile information. Requires a valid JWT token in the header (Authorization: JWT {token})|204:&nbsp;Success<br>400:&nbsp;Invalid&nbsp;input<br>401:&nbsp;Unauthorized<br>404:&nbsp;User&nbsp;not&nbsp;found<br>422:&nbsp;Duplicate&nbsp;email&nbsp;address<br>507:&nbsp;Database&nbsp;error
 |`/users/{username}`|PUT|Updates user password. Requires a valid JWT reset token in the header (Authorization: JWT {token})|204:&nbsp;Success<br>400:&nbsp;Invalid&nbsp;input<br>401:&nbsp;Unauthorized<br>507:&nbsp;Database&nbsp;error
 |`/invitation`|POST|Requests an invitation to be emailed to the address submitted in the body.|204:&nbsp;Success<br>400:&nbsp;Invalid&nbsp;input<br>429:&nbsp;Invitation&nbsp;count&nbsp;exceeded
-|`/tracks/`|GET|Returns the latest MAX_TRACKS (limit 500) |200:&nbsp;Success<br>404:&nbsp;Not found
-|`/tracks/?filter={filter expression}`|GET|Returns latest MAX_TRACKS (limit 500) that match filter expression.|200:&nbsp;Success<br>404:&nbsp;Not found
+|`/tracks/`|GET|Returns the latest MAX_TRACKS (limit 5000) |200:&nbsp;Success<br>404:&nbsp;Not found
+|`/tracks/?filter={filter expression}`|GET|Returns latest MAX_TRACKS (limit 5000) that match filter expression.|200:&nbsp;Success<br>404:&nbsp;Not found
 |`/tracks/?latlng={lat},{long}&distance={d}`|GET|Returns a list of tracks near a given location by a given distance in meters.|200:&nbsp;Success<br>404:&nbsp;Not found
 |`/tracks/?small=yes`|GET|Returns abbreviated version of track list. Can be combined with geospatial search above.|200:&nbsp;Success<br>404:&nbsp;Not found
 |`/tracks/`|POST|Creates a new track. JSON document in body. Requires a valid JWT token in the header (Authorization: JWT {token}). Returns trackId.|201:&nbsp;Success<br>400:&nbsp;Invalid input<br>401:&nbsp;Unauthorized<br>507:&nbsp;Database&nbsp;error
