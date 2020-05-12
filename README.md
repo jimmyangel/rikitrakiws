@@ -6,6 +6,8 @@ This repository contains the code for the web services supporting RikiTraki, a o
 
 If you want to host your own Web Services layer:
 
+* ```npm install```
+
 * Install and run [MongoDB](https://www.mongodb.com/)
 
 * Unzip ```rikitraki_dump.zip``` (located in emptydb directory of this repo) in some working directory
