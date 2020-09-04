@@ -35,7 +35,7 @@
     "log4js": "^0.6.26",
     "mailcomposer": "^2.1.0",
     "mailgun-js": "^0.7.4",
-    "mongodb": "^2.0.40",
+    "mongodb": "^3.6.1",
     "passport": "^0.2.2",
     "passport-http": "^0.3.0",
     "passport-jwt": "^1.1.0",
