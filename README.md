@@ -52,7 +52,7 @@ SSL is required on all authenticated/authorized calls.
 |`/tracks/`|GET|Returns the latest MAX_TRACKS (limit 5000) |200:&nbsp;Success<br>404:&nbsp;Not found
 |`/tracks/?filter={filter expression}`|GET|Returns latest MAX_TRACKS (limit 5000) that match filter expression.|200:&nbsp;Success<br>404:&nbsp;Not found
 |`/tracks/?latlng={lat},{long}&distance={d}`|GET|Returns a list of tracks near a given location by a given distance in meters.|200:&nbsp;Success<br>404:&nbsp;Not found
-|`/tracks/?small=yes`|GET|Returns abbreviated version of track list. Can be combined with geospatial search above.|200:&nbsp;Success<br>404:&nbsp;Not found
+|`/tracks/?proj=small`|GET|Returns abbreviated version of track list. Can be combined with geospatial search above.|200:&nbsp;Success<br>404:&nbsp;Not found
 |`/tracks/`|POST|Creates a new track. JSON document in body. Requires a valid JWT token in the header (Authorization: JWT {token}). Returns trackId.|201:&nbsp;Success<br>400:&nbsp;Invalid input<br>401:&nbsp;Unauthorized<br>507:&nbsp;Database&nbsp;error
 |`/tracks/{trackId}`|PUT|Updates track info. JSON document in body. Requires a valid JWT token in the header (Authorization: JWT {token}). Returns trackId.|200:&nbsp;Success<br>400:&nbsp;Invalid input<br>401:&nbsp;Unauthorized<br>403:&nbsp;Forbidden<br>507:&nbsp;Database&nbsp;error
 |`/tracks/{trackId}`|DELETE|Deletes track and associated images. Requires a valid JWT token in the header (Authorization: JWT {token}).|204:&nbsp;Success<br>401:&nbsp;Unauthorized<br>403:&nbsp;Forbidden<br>507:&nbsp;Database&nbsp;error
