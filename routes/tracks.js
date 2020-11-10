@@ -336,7 +336,8 @@ module.exports = function (router, db) {
 	router.get('/v1/motd', function(req, res) {
 		logger.info('get motd');
 		db.collection('tracks', function (err, collection) {
-			collection.find({'hasPhotos' : true}, {limit: MAX_MOTD, sort: {createdDate: -1}, fields: {_id: false, trackId: true, trackName: true}}).toArray(function(err, items) {
+      // Must have photos and description greater than 20 characters
+			collection.find({'hasPhotos' : true, 'trackDescription': {'$regex': /^.{21,}$/}}, {limit: MAX_MOTD, sort: {createdDate: -1}, fields: {_id: false, trackId: true, trackName: true}}).toArray(function(err, items) {
 				if (items) {
 					var motd = [];
 					for (var i=0; i<items.length; i++) {
