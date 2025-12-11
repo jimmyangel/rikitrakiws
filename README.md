@@ -1,4 +1,4 @@
-# RikiTrakiWS
+# RikiTrakiWS (Deprecated)
 
 This repository contains the code for the web services supporting RikiTraki, a outdoor activities log web application: [RikiTraki.com](https://www.rikitraki.com). The public Web Services and database are hosted in Google Cloud Platform. The data is maintained on a MongoDB database to which this project provides a CRUD interface using REST web services.
 
